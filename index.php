@@ -85,19 +85,24 @@ catch (PDOException $e)
  include $_SERVER['DOCUMENT_ROOT'].'/postspage.php';
  // var_dump($_SERVER);
  // echo $_SERVER['DOCUMENT_ROOT'];  
- $qwer=array();
- var_dump($qwer);
+ $qwer=array(); 
  $qwe='3213';
+ echo "<details>
+ 	<summary>От воно що!</summary><pre>";
+var_dump($qwer); 
  echo "От і число: {$qwe}";
  $qwer= array('qa' => '12', 'ew' => 'qad', 'ewr' => '34.5');
  foreach($qwer as $qwe)
  {  
  	echo "<p>this {$qwe}</p>";
  }
-
- echo 'Post id='.$_COOKIE['delpost'].' has been deleted ';
- echo $_SERVER['HTTP_REFERER'];
+ echo "</pre></<details>";
+ if (isset($_COOKIE['delpost'])) {
+ 	echo 'Post id='.$_COOKIE['delpost'].' has been deleted ';
+	echo $_SERVER['HTTP_REFERER'];
+}
  
  // var_dump($_SERVER);
+
  ?>
 
