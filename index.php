@@ -1,6 +1,10 @@
 <?php
-include_once $_SERVER['DOCUMENT_ROOT'].'/myfunctions.inc.php';
-
+include_once $_SERVER['DOCUMENT_ROOT'].'../myfunctions.inc.php';
+session_start();
+// echo '<pre>';
+// print_r($_SERVER);
+// echo '</pre>';
+// var_dump($_SESSION['LogedIn']);
 if (isset($_GET['delpost']))
 {
 	$post_id=$_POST['delpost'];	
@@ -11,11 +15,15 @@ if (isset($_GET['delpost']))
 	setcookie('delpost', $post_id, $expiryTime);
 }
 
-if (isset($_GET['addpost'])) 
-{
+if (isset($_GET['addpost'])||isset($_GET['editpost'])) 
+{	
+	if(isset($_GET['editpost']))
+	{
+		$CurrentPost = ObjectSelect($_POST['editpost'],'wp_posts');		
+	}
 	include  $_SERVER['DOCUMENT_ROOT'].'/addpost.php';
 	exit;
-}
+}	
 
 include $_SERVER['DOCUMENT_ROOT'].'/mydb.inc.php';
 
@@ -38,17 +46,20 @@ if(isset($post_id))
 	exit;
 }
 
-if (isset($_POST['post-title'])&&isset($_POST['post-text']))
+if (isset($_POST['post-title'])&&isset($_POST['post-text'])&&$_POST['post-id']==''
+&&$_POST['post-title']!=''&&$_POST['post-text']!=''&&$_POST['cancel']!=1)
 {
 	try
 	{
 		$sql = 'INSERT INTO wp_posts SET
 		post_date = NOW(),
 		post_title = :post_title,
-		post_text = :post_text';
+		post_text = :post_text,
+		authorid = :authorid';
 		$insert_sql = $pdo -> prepare($sql);
 		$insert_sql->bindValue(':post_title', $_POST['post-title']);
 		$insert_sql->bindValue(':post_text', $_POST['post-text']);
+		$insert_sql->bindValue(':authorid', $_SESSION['LogedIn']);
 		$insert_sql->execute();		
 	}
 	catch (PDOException $e)
@@ -59,11 +70,36 @@ if (isset($_POST['post-title'])&&isset($_POST['post-text']))
 	}
 	header('Location: .');
 	exit;
+} 
+elseif (isset($_POST['post-title'])&&isset($_POST['post-text'])&&$_POST['post-id']!=''
+&&$_POST['post-title']!=''&&$_POST['post-text']!=''&&$_POST['cancel']!=1)	
+{
+	try
+	{
+		$sql = 'UPDATE wp_posts SET 
+		post_date = NOW(), 
+		post_title = :post_title,
+		post_text = :post_text WHERE id=:post_id';
+		$requestObj = $pdo -> prepare($sql);
+		$requestObj -> bindValue(':post_id', $_POST['post-id']);
+		$requestObj -> bindValue(':post_title', $_POST['post-title']);
+		$requestObj -> bindValue(':post_text', $_POST['post-text']);
+		$requestObj -> execute();
+	}
+	catch (PDOException $e)
+	{
+		$error = 'Помилка при оновленні поста: '. $e->getMessage();
+		include $_SERVER['DOCUMENT_ROOT'].'/error.php';
+		exit;		
+	}	
+	header('Location: .');
+	exit;
 }
 
 try
 {
- 	$sql = 'SELECT * FROM wp_posts ORDER BY post_date DESC';
+ 	$sql = 'SELECT wp_posts.*, wp_user.name, wp_user.email FROM wp_posts LEFT JOIN wp_user
+ 	ON wp_posts.authorid=wp_user.id ORDER BY post_date DESC';
  	$result = $pdo->query($sql);
  	
 }
@@ -81,10 +117,9 @@ catch (PDOException $e)
  	 	$posts_data[] = $row; 
  		++$title_id; 	
 	}
-
+	
  include $_SERVER['DOCUMENT_ROOT'].'/postspage.php';
- // var_dump($_SERVER);
- // echo $_SERVER['DOCUMENT_ROOT'];  
+
  $qwer=array(); 
  $qwe='3213';
  echo "<details>
@@ -101,8 +136,4 @@ var_dump($qwer);
  	echo 'Post id='.$_COOKIE['delpost'].' has been deleted ';
 	echo $_SERVER['HTTP_REFERER'];
 }
- 
- // var_dump($_SERVER);
-
  ?>
-

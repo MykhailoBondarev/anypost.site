@@ -1,0 +1,78 @@
+.admin-panel
+{
+	border-top: 1px solid #000;
+	border-bottom: 1px solid #000;
+	overflow: auto;
+}
+
+.admin-panel h3
+{
+	float: left;
+}
+
+.admin-panel > div
+{
+	float: right;
+	padding: 10px 5px;
+}
+
+.main-block
+{
+	margin: 10px 0;
+}
+
+.main-block input[type="radio"],
+.main-block > div
+{
+  display: none;
+}
+
+.main-block label
+{
+	cursor: pointer;
+	padding: 20px 5px;
+	border: 1px solid #000;
+	display: inline-block;
+}
+
+.main-block input[type="radio"]:checked + label 
+{
+	border-bottom: 3px solid #fff;
+}
+
+.main-block > input:nth-of-type(1):checked ~ div:nth-of-type(1),
+.main-block > input:nth-of-type(2):checked ~ div:nth-of-type(2),
+.main-block > input:nth-of-type(3):checked ~ div:nth-of-type(3)
+{
+ display: block;
+ border: 1px solid #000;
+}
+
+.users-box, .row
+{
+	overflow: auto;	
+}
+
+.column
+{
+	float: left;
+	width: 18%;
+	min-height: 20px;
+}
+
+.row:first-child .column:last-child
+
+{
+	border: 0;
+}
+
+.column
+{
+	border: 1px solid #000;
+	margin: 1px;
+}
+
+input.column
+{
+	background-color: #ffff004a;
+}

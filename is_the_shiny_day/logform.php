@@ -10,7 +10,12 @@
 		<input type="text" name="login"><br>
 		<label for="pass">Пароль:</label><br>
 		<input type="password" name="pass"><br>
+		<input type="hidden" name="action" value="login"> 
 		<button type="submit">Вхід</button>
 	</form>
+	<?php 
+		echo $loginError; 
+		echo $error;
+	?>
 </body>
 </html>
