@@ -1,7 +1,6 @@
 <?php 
-if ($_SESSION['LogedIn']!='')
+if ($_SESSION['LogedIn'])
 { 
- include $_SERVER['DOCUMENT_ROOT'].'/header.php';
 	?>
 		<div class="main-block">
 			<input type="radio" checked="checked" id="users" name="lists">
@@ -23,4 +22,5 @@ else
 {
 	include $_SERVER['DOCUMENT_ROOT'].'/is_the_shiny_day/denied.php';
 }
+include $_SERVER['DOCUMENT_ROOT'].'/footer.php';
  ?>

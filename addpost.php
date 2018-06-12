@@ -9,7 +9,8 @@
 		$postText='';
 		if (isset($_GET['addpost'])) 
 		{
-			$buttonCaption = 'Додати пост';			
+			$buttonCaption = 'Додати пост';	
+			$methodType = 0;		
 		}
 		else
 		{
@@ -17,11 +18,13 @@
 			$postTitle=$CurrentPost['post_title'];
 			$postText=$CurrentPost['post_text'];
 			$post_id=$_POST['editpost'];
+			$methodType = 1;	
 		}	
 ?>  
 <body>
 	<form action="?" method="post">
 		<input type="hidden" name="post-id" value="<?php echo $post_id; ?>">
+		<input type="hidden" name="method-type" value="<?php echo $methodType; ?>">
 		<div>
 			<label for="post-title">Введіть назву поста:</label>
 			<input type="text" name="post-title" value="<?php echo $postTitle ?>">

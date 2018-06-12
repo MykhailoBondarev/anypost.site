@@ -1,11 +1,6 @@
-<?php 
-if ($_SESSION['LogedIn']!='')
-{ 
- 	include $_SERVER['DOCUMENT_ROOT'].'/header.php';
-} 
- ?>
-<body>		
+	<?php if ($_SESSION['LogedIn']) { ?>
 	<p><a href="?addpost">Додайте власний пост</a></p>
+	<?php } ?>
 	<p>Всього записів в БД: <?php echo $title_id; ?></p>
 	<p>Ось весь список постів:</p>
 	<table>
@@ -32,9 +27,7 @@ if ($_SESSION['LogedIn']!='')
  			echo '<td><form action="?delpost" method="post"><input name="delpost" hidden value="'.$post['ID'].'"><button>Видалити пост</button></form></td>';
  			}
  			echo '</tr>'; 			
-		}
+		}		
 	 ?>	 
 	 </table>
 	 </div>
-</body>
-</html>

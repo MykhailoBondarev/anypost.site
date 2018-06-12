@@ -48,7 +48,7 @@
  border: 1px solid #000;
 }
 
-.users-box, .row
+.users-box, .row, .text-box
 {
 	overflow: auto;	
 }
@@ -58,6 +58,36 @@
 	float: left;
 	width: 18%;
 	min-height: 20px;
+}
+
+.box
+{
+	float: left;
+	/*max-width: 50%;*/
+	width: 50%;
+}
+
+.avatar-box,
+.text-box,
+.button-box
+{
+	float: left;
+}
+
+.avatar-box
+{
+	width: 20%;
+	min-height: 200px;
+}
+
+.text-box
+{
+	width: 60%;
+}
+
+.button-box
+{
+	width: 20%;
 }
 
 .row:first-child .column:last-child
@@ -75,4 +105,24 @@
 input.column
 {
 	background-color: #ffff004a;
+}
+
+.footer
+{
+	width: 100%;
+}
+
+.center-box
+{
+	margin: 0 auto;
+	width: 900px;
+}
+
+@media screen and (max-width: 710px)
+{
+	.box
+	{	
+		/*max-width: 50%;*/
+		width: 100%;
+	}	
 }

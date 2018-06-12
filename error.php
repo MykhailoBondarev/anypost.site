@@ -2,9 +2,9 @@
 <html lang="en">
 <head>
 	<meta charset="UTF-8">
-	<title>Error page: <?php echo $error; ?></title>
+	<title>Error page!</title>
 </head>
 <body>
-	
+	<?php echo $error; ?>
 </body>
 </html>

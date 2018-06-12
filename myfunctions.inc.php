@@ -1,4 +1,8 @@
 <?php 
+function redirectHeader()
+{
+	header('Location: .');	
+}
 
 function htmlout($text)
 {
@@ -17,7 +21,7 @@ function LogIn($log,$pass,$action)
 
 		try{
 			include $_SERVER['DOCUMENT_ROOT'].'/mydb.inc.php'; 		
-			$sqlStr = 'SELECT * FROM wp_user WHERE login=:log AND password=:pass';
+			$sqlStr = 'SELECT * FROM users WHERE login=:log AND password=:pass';
 	        $sqlExp = $GLOBALS['pdo'] -> prepare($sqlStr);
 	        $sqlExp -> bindValue(':log', $log);
 	        $sqlExp -> bindValue(':pass', $m_pass);
@@ -30,7 +34,7 @@ function LogIn($log,$pass,$action)
 	        	$_SESSION['Login']=$log;
 	        	$_SESSION['Ip']=$_SERVER['REMOTE_ADDR'];	                	
 	        	session_write_close();	        
-	        	// return $_COOKIE['PHPSESSID'];	      	
+	        	// return $resultArr;	       	
 	        }
 	        elseif ($action=='login' && $resultArr[0]!='')
 	        {	        	
@@ -38,8 +42,8 @@ function LogIn($log,$pass,$action)
 	        	unset($_SESSION['Login']);
 	        	unset($_SESSION['Ip']);
 	        	$GLOBALS['loginError'] = 'Невірний логін або пароль';
-	            setcookie(session_name,'',time() - 3600, '/');		        	       
-	        }	    	       
+	            setcookie(session_name,'',time() - 3600, '/');	            	   		        	       
+	        }	         	       
 	    }
 	    catch(PDOexception $e)
 	    {
@@ -103,22 +107,23 @@ function ObjectSelect($ObjectId, $objectTable)
 	}
 }
 
-function UpdateUser($userId, $userName, $userEmail, $userLogin)
+function UpdateUser($userId, $userName, $userEmail, $userLogin, $userRole)
 {
 	try
 	{
-		include $_SERVER['DOCUMENT_ROOT'].'/mydb.inc.php'; 		
-		$sqlStr = 'UPDATE wp_user SET name=:userName, email=:userEmail, 
-		login=:userLogin WHERE id=:userId';
+		include $_SERVER['DOCUMENT_ROOT'].'/mydb.inc.php'; 
+
+		$sqlStr = 'UPDATE users SET name=:userName, email=:userEmail, 
+		login=:userLogin, role=:userRole WHERE id=:userId';
 		$sqlExp = $GLOBALS['pdo'] -> prepare($sqlStr);
+		$sqlExp -> bindValue(':userRole', $userRole);
 		$sqlExp -> bindValue(':userName', $userName);
 		$sqlExp -> bindValue(':userEmail', $userEmail);
 		$sqlExp -> bindValue(':userLogin', $userLogin);
 		$sqlExp -> bindValue(':userPassword', $md5Pass);
 		$sqlExp -> bindValue(':userId', $userId);
 		$sqlExp -> execute();
-		$resultArr = $sqlExp -> fetch();
-		var_dump($resultArr);
+		$resultArr = $sqlExp -> fetch();	
 	}
 	catch (PDOException $e)
 	{
@@ -133,7 +138,7 @@ function UpdateUserPassword($userId,$userPassword)
 	try
 	{
 		include $_SERVER['DOCUMENT_ROOT'].'/mydb.inc.php'; 
-		$sqlStr='UPDATE wp_user SET password=:userPassword WHERE id=:userId';
+		$sqlStr='UPDATE users SET password=:userPassword WHERE id=:userId';
 		$sqlDo = $GLOBALS['pdo'] -> prepare($sqlStr);
 		$sqlDo -> bindValue(':id', $userId);
 		$sqlDo -> bindValue(':userPassword', $userPassword);
@@ -145,4 +150,48 @@ function UpdateUserPassword($userId,$userPassword)
 		return $error;
 	}
 }
- ?>
+
+function UserSelect($UserId)
+{
+	try
+	{
+		include $_SERVER['DOCUMENT_ROOT'].'/mydb.inc.php'; 
+		$selectStr = 'SELECT users.*, roles.* FROM users 
+		LEFT JOIN roles ON
+		users.role=roles.id	
+		WHERE users.id=:Id';
+		$sqlExec = $GLOBALS['pdo'] -> prepare($selectStr);
+		$sqlExec -> bindValue(':Id',$UserId);
+		$sqlExec -> execute();
+		$resultArr = $sqlExec -> fetch();	
+		return $resultArr;			
+	}
+	catch (PDOException $e)
+	{
+		$GLOBALS['error'] = 'Сталася помилка при виконанні запиту '. $e -> getMessage();
+		return $error;		
+	}
+}
+
+function UsersList()
+{
+		try
+		{
+			include $_SERVER['DOCUMENT_ROOT'].'/mydb.inc.php'; 
+			$sqlStr = 'SELECT users.*, roles.description FROM users 
+			LEFT JOIN roles ON 
+			users.role=roles.id';		
+			$resultArr = $GLOBALS['pdo'] -> query($sqlStr);	
+			while ($object = $resultArr -> fetch())
+			{
+ 			  $objects[] = $object;
+			}
+			return $objects;			
+		}
+		catch (PDOexception $e)
+		{
+			$GLOBALS['error'] = 'Сталася помилка при виконанні запиту '. $e -> getMessage();
+			return $error;
+		}	
+}
+?>

@@ -1,10 +1,10 @@
 <?php
-include_once $_SERVER['DOCUMENT_ROOT'].'../myfunctions.inc.php';
-session_start();
+$GLOBALS['pageTitle']='Головна сторінка';
+include $_SERVER['DOCUMENT_ROOT'].'/header.php';
 // echo '<pre>';
 // print_r($_SERVER);
 // echo '</pre>';
-// var_dump($_SESSION['LogedIn']);
+
 if (isset($_GET['delpost']))
 {
 	$post_id=$_POST['delpost'];	
@@ -19,7 +19,7 @@ if (isset($_GET['addpost'])||isset($_GET['editpost']))
 {	
 	if(isset($_GET['editpost']))
 	{
-		$CurrentPost = ObjectSelect($_POST['editpost'],'wp_posts');		
+		$CurrentPost = ObjectSelect($_POST['editpost'],'posts');		
 	}
 	include  $_SERVER['DOCUMENT_ROOT'].'/addpost.php';
 	exit;
@@ -31,7 +31,7 @@ if(isset($post_id))
 {
 	try
 	{
-		$sql = 'DELETE FROM wp_posts WHERE ID=:post_id';
+		$sql = 'DELETE FROM posts WHERE ID=:post_id';
 		$delete_sql = $pdo -> prepare($sql);
 		$delete_sql->bindValue(':post_id', $post_id);
 		$delete_sql->execute();
@@ -42,64 +42,63 @@ if(isset($post_id))
 		include 'error.php';
 		exit;
 	}
-	header('Location: .');
 	exit;
 }
 
-if (isset($_POST['post-title'])&&isset($_POST['post-text'])&&$_POST['post-id']==''
-&&$_POST['post-title']!=''&&$_POST['post-text']!=''&&$_POST['cancel']!=1)
+if (isset($_POST['method-type'])&&isset($_POST['post-title'])&&isset($_POST['post-text'])
+&&$_POST['post-title']!=''&&$_POST['post-text']!=''&&$_POST['cancel']!=1) 
 {
-	try
+	if ($_POST['method-type']==0)
 	{
-		$sql = 'INSERT INTO wp_posts SET
-		post_date = NOW(),
-		post_title = :post_title,
-		post_text = :post_text,
-		authorid = :authorid';
-		$insert_sql = $pdo -> prepare($sql);
-		$insert_sql->bindValue(':post_title', $_POST['post-title']);
-		$insert_sql->bindValue(':post_text', $_POST['post-text']);
-		$insert_sql->bindValue(':authorid', $_SESSION['LogedIn']);
-		$insert_sql->execute();		
-	}
-	catch (PDOException $e)
+		try
+		{
+			$sql = 'INSERT INTO posts SET
+			post_date = NOW(),
+			post_title = :post_title,
+			post_text = :post_text,
+			authorid = :authorid';
+			$insert_sql = $pdo -> prepare($sql);
+			$insert_sql->bindValue(':post_title', $_POST['post-title']);
+			$insert_sql->bindValue(':post_text', $_POST['post-text']);
+			$insert_sql->bindValue(':authorid', $_SESSION['LogedIn']);
+			$insert_sql->execute();		
+		}
+		catch (PDOException $e)
+		{
+			$error = 'Помилка при додаванні поста: '. $e->getMessage();
+			include $_SERVER['DOCUMENT_ROOT'].'/error.php';
+			exit;
+		}
+		exit;
+	} 
+	elseif($_POST['method-type']==1)	
 	{
-		$error = 'Помилка при додаванні поста: '. $e->getMessage();
-		include $_SERVER['DOCUMENT_ROOT'].'/error.php';
+		try
+		{
+			$sql = 'UPDATE posts SET 
+			post_date = NOW(), 
+			post_title = :post_title,
+			post_text = :post_text WHERE id=:post_id';
+			$requestObj = $pdo -> prepare($sql);
+			$requestObj -> bindValue(':post_id', $_POST['post-id']);
+			$requestObj -> bindValue(':post_title', $_POST['post-title']);
+			$requestObj -> bindValue(':post_text', $_POST['post-text']);
+			$requestObj -> execute();
+		}
+		catch (PDOException $e)
+		{
+			$error = 'Помилка при оновленні поста: '. $e->getMessage();
+			include $_SERVER['DOCUMENT_ROOT'].'/error.php';
+			exit;		
+		}	
 		exit;
 	}
-	header('Location: .');
-	exit;
-} 
-elseif (isset($_POST['post-title'])&&isset($_POST['post-text'])&&$_POST['post-id']!=''
-&&$_POST['post-title']!=''&&$_POST['post-text']!=''&&$_POST['cancel']!=1)	
-{
-	try
-	{
-		$sql = 'UPDATE wp_posts SET 
-		post_date = NOW(), 
-		post_title = :post_title,
-		post_text = :post_text WHERE id=:post_id';
-		$requestObj = $pdo -> prepare($sql);
-		$requestObj -> bindValue(':post_id', $_POST['post-id']);
-		$requestObj -> bindValue(':post_title', $_POST['post-title']);
-		$requestObj -> bindValue(':post_text', $_POST['post-text']);
-		$requestObj -> execute();
-	}
-	catch (PDOException $e)
-	{
-		$error = 'Помилка при оновленні поста: '. $e->getMessage();
-		include $_SERVER['DOCUMENT_ROOT'].'/error.php';
-		exit;		
-	}	
-	header('Location: .');
-	exit;
 }
 
 try
 {
- 	$sql = 'SELECT wp_posts.*, wp_user.name, wp_user.email FROM wp_posts LEFT JOIN wp_user
- 	ON wp_posts.authorid=wp_user.id ORDER BY post_date DESC';
+ 	$sql = 'SELECT posts.*, users.name, users.email FROM posts LEFT JOIN users
+ 	ON posts.authorid=users.id ORDER BY post_date DESC';
  	$result = $pdo->query($sql);
  	
 }
@@ -120,8 +119,6 @@ catch (PDOException $e)
 	
  include $_SERVER['DOCUMENT_ROOT'].'/postspage.php';
 
- $qwer=array(); 
- $qwe='3213';
  echo "<details>
  	<summary>От воно що!</summary><pre>";
 var_dump($qwer); 
@@ -131,9 +128,10 @@ var_dump($qwer);
  {  
  	echo "<p>this {$qwe}</p>";
  }
- echo "</pre></<details>";
+ echo "</pre></details>";
  if (isset($_COOKIE['delpost'])) {
  	echo 'Post id='.$_COOKIE['delpost'].' has been deleted ';
 	echo $_SERVER['HTTP_REFERER'];
 }
+include $_SERVER['DOCUMENT_ROOT'].'/footer.php';
  ?>
