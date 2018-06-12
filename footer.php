@@ -1,6 +1,6 @@
 <div class="footer">
 	<div class="center-box">
-		<p>Тут маємо права лише МИ! ©  2017- <?php echo date(Y); ?></p>
+		<p>Тут маємо права лише МИ! ©  2017- <?php echo date('Y'); ?></p>
 	</div>
 </div>
 </body>

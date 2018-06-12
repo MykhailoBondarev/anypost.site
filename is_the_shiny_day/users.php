@@ -8,61 +8,88 @@ if (isset($sessAuth)&&$sessAuth!=''||$_SESSION['LogedIn'])
 	$btnFunc2='delete-id';
 	$btnAction1=$btnAction2='';
 	$hiddenStyle='style="display: none;"';
-
-	if (isset($_POST['edit-id']))
+	$showPassFields='style="display: none;"';
+	if (isset($_POST['edit-id'])||isset($_POST['add-id']))
 	{
-		$SelectedUser = UserSelect($_POST['edit-id']);
-		$RolesList = ObjectList('roles');			
-		$hiddenStyle='style="display: block;"'; 
-	}	
+		if (isset($_POST['edit-id']))
+		{
+			$SelectedUser = UserSelect($_POST['edit-id']);					
+			$modalHeader='Редагувати користувача';
+		}
+		elseif (isset($_POST['add-id']))		{
+			 
+			$modalHeader='Додати користувача';
+			$showPassFields='style="display: block;"';
+		}
+		$hiddenStyle='style="display: block;"';
+		$RolesList = ObjectList('roles');
+	}
+
 	if (isset($_POST['save']))
 	{
-		if ($_POST['password']==$_POST['password-confirm'])
+		if (isset($_POST['change-pass'])&&$_POST['change-pass']==1)
 		{
-			UpdateUserPassword($_POST['save'], $_POST['password']);
-		}
-		else
-		{				
-			// $Caption = '<div class="column">Пароль</div><div class="column">Підтвердження паролю</div>';		
-			$hiddenStyle='style="display: block;"'; 
-			$error = 'Пароль та підтвердження не сходяться!';			
-			echo $error;
-		}
+			ChangePassword($_POST['save'], $_POST['password'], $_POST['password-confirm']);
+		}		
 		if (isset($_POST['username'])&&$_POST['username']!=''&&isset($_POST['email'])&&$_POST['email']!=''&&isset($_POST['login'])&&$_POST['login']!=''&&isset($_POST['role'])&&
 			$_POST['role']!=''&&$_POST['role']!=0)
-		{
-			UpdateUser($_POST['save'], $_POST['username'], $_POST['email'], $_POST['login'], $_POST['role']);		
+		{	
+			if (isset($_POST['edit-id']))
+			{
+				UpdateUser($_POST['save'], $_POST['username'], $_POST['email'], $_POST['login'], $_POST['role']);		
+			}
+			if (isset($_POST['add-id']))
+			{
+				AddUser($_POST['username'], $_POST['email'], $_POST['login'], $_POST['role'], $_POST['password']);				
+			}					
 		}
-		elseif ($_POST['cancel']==1)
-		{
+	}
+	elseif ($_POST['cancel']==1)
+	{
 			$error='';
 			$hiddenStyle='style="display: none;"';	
-		}
-		else
-		{
+	}
+	else
+	{
 			// $Caption = '<div class="column">Пароль</div><div class="column">Підтвердження паролю</div>';		
 			$hiddenStyle='style="display: block;"'; 
 			$changePassStyle = 'style="display: none;"';
 			$error = 'Будь ласка заповніть всі поля для вводу!';
 			// $SelectedUser = UserSelect($_POST['save']);
 			echo $error;
-		}
+	}
 		// $SelectedUser['id'] = $_POST['save'];
 		// $SelectedUser['name'] = $_POST['username'];
 		// $SelectedUser['email'] = $_POST['email'];
 		// $SelectedUser['login'] = $_POST['login'];
-		// $SelectedUser['role'] = $_POST['role'];
-	}	
+		// $SelectedUser['role'] = $_POST['role'];	
 	?>
 <!-- 	<pre>
 		<?php //print_r($RolesList); ?>
 	</pre> -->
-		<form action="" method="POST"><button submit value="add-user">Додати користувача</button></form>
-		<form class="row" method="POST" action="" <?php echo $hiddenStyle; ?>>
+		<form action="" method="POST"><button class="add-id" submit name="add-id">Додати користувача</button></form>
+		<div class="modal-window" <?php echo $hiddenStyle; ?>>			
+		<form class="add-edit-form" method="POST" action="" >
+				<h4><?php echo $modalHeader; ?></h4>
 				<input type="hidden" name="save" value="<?php echo htmlout($_POST['edit-id']); ?>">
-				<input type="text" class="column" name="username" value="<?php echo htmlout($SelectedUser['name']); ?>">
-				<input type="text" class="column" name="email" value="<?php echo htmlout($SelectedUser['email']); ?>">
-				<input type="text" class="column" name="login" value="<?php echo htmlout($SelectedUser['login']); ?>">
+				<div>
+					<img src="" alt="">
+					<input type="file">
+				</div>
+				<div>
+				<label for="username">Ім'я</label>
+				<input type="text" class="" name="username" value="<?php echo htmlout($SelectedUser['name']); ?>">				
+				</div>
+				<div>
+				<label for="email">Поштова адреса:</label>
+				<input type="text" class="" name="email" value="<?php echo htmlout($SelectedUser['email']); ?>">				
+				</div>
+				<div>
+				<label for="login">Логін:</label>
+				<input type="text" class="" name="login" value="<?php echo htmlout($SelectedUser['login']); ?>">				
+				</div>
+				<div>
+				<label for="role">Роль:</label>
 				<select class="" name="role">
 					<option value="0">Не обрана</option>	
 					<?php foreach ($RolesList as $Role) { 
@@ -74,10 +101,22 @@ if (isset($sessAuth)&&$sessAuth!=''||$_SESSION['LogedIn'])
 					?>	
 						<option <?php echo $selectedRole ?> value="<?php echo htmlout($Role['id']); ?>"><?php echo htmlout($Role['description']); ?></option>
 					<?php } ?>							
-				</select>				
+				</select>						
+				</div>
+				<div <?php echo $showPassFields; ?>>
+					<label for="pass-field">Пароль:</label>
+					<input type="password" name="password">
+				</div>
+				<div <?php echo $showPassFields; ?>>
+					<label for="confirm-pass-field">Підтвердження пароля:</label>
+					<input type="password" name="password-confirm">					
+				</div>	
+				<div>				
 				<button type="submit">Зберегти</button>
-				<button name="cancel" value="1">Скасувати</button>
+				<button name="cancel" value="1">Скасувати</button>					
+				</div>
 		</form>
+		</div>
 	<?php  	
 	$countId=0;
     foreach (UsersList() as $user)
@@ -142,5 +181,4 @@ if (isset($sessAuth)&&$sessAuth!=''||$_SESSION['LogedIn'])
 else
 {
 	include $_SERVER['DOCUMENT_ROOT'].'/is_the_shiny_day/denied.php';	
-}
- ?>
+}?>

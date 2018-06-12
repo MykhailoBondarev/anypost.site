@@ -32,7 +32,8 @@ function LogIn($log,$pass,$action)
 	        	session_start();
 	        	$_SESSION['LogedIn']=$resultArr[0];
 	        	$_SESSION['Login']=$log;
-	        	$_SESSION['Ip']=$_SERVER['REMOTE_ADDR'];	                	
+	        	$_SESSION['Ip']=$_SERVER['REMOTE_ADDR'];
+	        	$_SESSION['Role']=$resultArr['role'];	                	
 	        	session_write_close();	        
 	        	// return $resultArr;	       	
 	        }
@@ -41,6 +42,7 @@ function LogIn($log,$pass,$action)
 	        	unset($_SESSION['LogedIn']);
 	        	unset($_SESSION['Login']);
 	        	unset($_SESSION['Ip']);
+	        	unset($_SESSION['Role']);
 	        	$GLOBALS['loginError'] = 'Невірний логін або пароль';
 	            setcookie(session_name,'',time() - 3600, '/');	            	   		        	       
 	        }	         	       
@@ -61,6 +63,7 @@ function LogOut()
 		unset($_SESSION['LogedIn']);
 		unset($_SESSION['Login']);
 		unset($_SESSION['Ip']);
+		unset($_SESSION['Role']);
 		session_destroy();	
 	}
 		setcookie('PHPSESSID','', time() - 6000, '/'); 	
@@ -106,7 +109,7 @@ function ObjectSelect($ObjectId, $objectTable)
 		return $error;		
 	}
 }
-
+	
 function UpdateUser($userId, $userName, $userEmail, $userLogin, $userRole)
 {
 	try
@@ -119,8 +122,7 @@ function UpdateUser($userId, $userName, $userEmail, $userLogin, $userRole)
 		$sqlExp -> bindValue(':userRole', $userRole);
 		$sqlExp -> bindValue(':userName', $userName);
 		$sqlExp -> bindValue(':userEmail', $userEmail);
-		$sqlExp -> bindValue(':userLogin', $userLogin);
-		$sqlExp -> bindValue(':userPassword', $md5Pass);
+		$sqlExp -> bindValue(':userLogin', $userLogin);	
 		$sqlExp -> bindValue(':userId', $userId);
 		$sqlExp -> execute();
 		$resultArr = $sqlExp -> fetch();	
@@ -147,6 +149,21 @@ function UpdateUserPassword($userId,$userPassword)
 	catch (PDOException $e)
 	{
 		$GLOBALS['error'] = 'Cталася помилка при зміні пароля користувача '. $e -> getMessage();
+		return $error;
+	}
+}
+
+function ChangePassword($UserId, $Password, $PasswordConfirm)
+{
+	if ($Password==$PasswordConfirm)
+	{
+		UpdateUserPassword($_POST['save'], $_POST['password']);
+	}
+	else
+	{				
+		// $Caption = '<div class="column">Пароль</div><div class="column">Підтвердження паролю</div>';		
+		// $hiddenStyle='style="display: block;"'; 
+		$error = 'Пароль та підтвердження не сходяться!';			
 		return $error;
 	}
 }
@@ -194,4 +211,30 @@ function UsersList()
 			return $error;
 		}	
 }
+
+function AddUser($userName, $userEmail, $userLogin, $userRole, $userPass)
+{
+	$md5Pass = md5($userPass);
+	try
+	{
+		include $_SERVER['DOCUMENT_ROOT'].'/mydb.inc.php'; 
+
+		$sqlStr = 'INSERT users SET name=:userName, email=:userEmail, 
+		login=:userLogin, role=:userRole, password=:userPassword';
+		$sqlExp = $GLOBALS['pdo'] -> prepare($sqlStr);
+		$sqlExp -> bindValue(':userRole', $userRole);
+		$sqlExp -> bindValue(':userName', $userName);
+		$sqlExp -> bindValue(':userEmail', $userEmail);
+		$sqlExp -> bindValue(':userLogin', $userLogin);
+		$sqlExp -> bindValue(':userPassword', $md5Pass);	
+		$sqlExp -> execute();
+		$resultArr = $sqlExp -> fetch();	
+	}
+	catch (PDOException $e)
+	{
+		$GLOBALS['error'] = 'Сталася помилка при оновленні даних користувача'. $e -> getMessage();
+		return $error;		
+	}
+}
+
 ?>

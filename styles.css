@@ -27,7 +27,7 @@
   display: none;
 }
 
-.main-block label
+.main-block > label
 {
 	cursor: pointer;
 	padding: 20px 5px;
@@ -88,6 +88,58 @@
 .button-box
 {
 	width: 20%;
+}
+
+.modal-window
+{
+	display: none;
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	z-index: 99999;
+	background: rgb(0,0,0,0.75);
+	transition: opacity 400ms ease-in;
+}
+
+.add-edit-form
+{
+	position: relative;
+	background: #ffff;
+	padding: 1%;
+	margin: 10% auto;
+	width: 20%;
+}
+
+.add-edit-form h4,
+.add-edit-form div 
+{
+	text-align: center;	
+}
+.add-edit-form > div 
+{
+	margin: 10px 0;
+}
+
+.add-edit-form div *
+{
+	width: 60%;
+	display: block;
+	margin: 0 auto;
+}
+
+.add-edit-form div img 
+{
+	width: 100px;
+	height: 120px;
+}
+
+.add-edit-form button
+{
+	margin: 3px;
+	width: 30%;
+	display: inline-block;
 }
 
 .row:first-child .column:last-child
