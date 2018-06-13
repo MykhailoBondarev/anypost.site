@@ -9,18 +9,14 @@ function htmlout($text)
 	return htmlspecialchars($text, ENT_QUOTES, 'UTF-8');
 }
 
-function LogIn($log,$pass,$action) 
-{
-	var_dump($action);
-	if ($action=='login')
-	{
-
-			if ($log=='' || $pass=='' || !isset($log) || !isset($pass))
-			{
-				$GLOBALS['loginError'] = 'Поля логін та пароль мусять бути заповнені!';	
-				return $GLOBALS['loginError'];	
-				exit;	
-			}
+function LogIn($log,$pass) 
+{		
+		if ($log=='' || $pass=='' || is_null($log) || is_null($pass)) 
+		{
+			$_SESSION['loginError'] = 'Поля логін та пароль мусять бути заповнені!';	
+			return $_SESSION['loginError'];			
+			exit;	
+		}
 		else
 		{
 			$m_pass=md5($pass);
@@ -32,38 +28,38 @@ function LogIn($log,$pass,$action)
 		        $sqlExp -> bindValue(':log', $log);
 		        $sqlExp -> bindValue(':pass', $m_pass);
 		        $sqlExp -> execute();
-		        $resultArr = $sqlExp -> fetch();	 
+		        $resultArr = $sqlExp -> fetch();	
 		        if ($resultArr[0] != '')
-		        {
+		        {		        	
 		        	session_start();
 		        	$_SESSION['LogedIn']=$resultArr[0];
 		        	$_SESSION['Login']=$log;
 		        	$_SESSION['Ip']=$_SERVER['REMOTE_ADDR'];
 		        	$_SESSION['Role']=$resultArr['role'];	                	
-		        	session_write_close();	        
-		        	// return $resultArr;	       	
+		        	session_write_close();		        	
 		        }
-		        elseif ($action=='login' && $resultArr[0]=='')
-		        {	        	
-		        	unset($_SESSION['LogedIn']);
-		        	unset($_SESSION['Login']);
-		        	unset($_SESSION['Ip']);
-		        	unset($_SESSION['Role']);	        	
-		            setcookie(session_name,'',time() - 3600, '/');
-		            $GLOBALS['loginError'] = 'Невірний логін або пароль';
-		            return $GLOBALS['loginError'];
+		        elseif ($resultArr[0]=='')
+		        {			        	
+		        	if(isset($_SESSION)) 
+		        	{       	
+		        		unset($_SESSION['LogedIn']);
+		        		unset($_SESSION['Login']);
+		        		unset($_SESSION['Ip']);
+		        		unset($_SESSION['Role']);	        	
+		            	setcookie('PHPSESSID','',time() - 3600, '/');
+		        	}
+		            $_SESSION['loginError'] = 'Невірний логін або пароль';		         
+		            return $_SESSION['loginError'];
 		            exit;	            	   		        	       
 		        }	         	       
 		    }
 		    catch(PDOexception $e)
 		    {
-	            $GLOBALS['error'] = 'Сталася помилка при виконанні запиту '. $e -> getMessage();
-	            return  $GLOBALS['error'];
+	            $_SESSION['loginError'] = 'Сталася помилка при виконанні запиту '. $e -> getMessage();
+	            return  $_SESSION['loginError'];
 	            exit;
 	        }
-
-		}
-	}
+		}	
 }
 
 function LogOut()
@@ -159,7 +155,8 @@ function UpdateUserPassword($userId, $userPassword)
 	catch (PDOException $e)
 	{
 		$GLOBALS['error'] = 'Cталася помилка при зміні пароля користувача '. $e -> getMessage();
-		return $GLOBALS['error'];
+		return $error;
+		exit;
 	}
 }
 
@@ -174,14 +171,14 @@ function ChangePassword($UserId, $Password, $PasswordConfirm)
 		else
 		{				
 			$GLOBALS['error'] = 'Пароль та підтвердження не сходяться!';			
-			return $GLOBALS['error'];	
+			return $error;	
 			exit;					
 		}		
 	}
 	else
 	{
 		$GLOBALS['error'] = 'Пароль не може бути порожнім!';			
-		return $GLOBALS['error'];
+		return $error;
 		exit;			
 	}
 
@@ -255,5 +252,4 @@ function AddUser($userName, $userEmail, $userLogin, $userRole, $userPass)
 		return $error;		
 	}
 }
-
 ?>
