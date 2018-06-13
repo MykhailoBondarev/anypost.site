@@ -11,49 +11,59 @@ function htmlout($text)
 
 function LogIn($log,$pass,$action) 
 {
-	if (($log=='' || $pass=='' || !isset($log) || !isset($pass)) && $action=='login')
+	var_dump($action);
+	if ($action=='login')
 	{
-		$GLOBALS['loginError'] = 'Поля логін та пароль мусять бути заповнені!';			
-	}
-	else
-	{
-		$m_pass=md5($pass);
 
-		try{
-			include $_SERVER['DOCUMENT_ROOT'].'/mydb.inc.php'; 		
-			$sqlStr = 'SELECT * FROM users WHERE login=:log AND password=:pass';
-	        $sqlExp = $GLOBALS['pdo'] -> prepare($sqlStr);
-	        $sqlExp -> bindValue(':log', $log);
-	        $sqlExp -> bindValue(':pass', $m_pass);
-	        $sqlExp -> execute();
-	        $resultArr = $sqlExp -> fetch();	 
-	        if ($resultArr[0] != '')
-	        {
-	        	session_start();
-	        	$_SESSION['LogedIn']=$resultArr[0];
-	        	$_SESSION['Login']=$log;
-	        	$_SESSION['Ip']=$_SERVER['REMOTE_ADDR'];
-	        	$_SESSION['Role']=$resultArr['role'];	                	
-	        	session_write_close();	        
-	        	// return $resultArr;	       	
+			if ($log=='' || $pass=='' || !isset($log) || !isset($pass))
+			{
+				$GLOBALS['loginError'] = 'Поля логін та пароль мусять бути заповнені!';	
+				return $GLOBALS['loginError'];	
+				exit;	
+			}
+		else
+		{
+			$m_pass=md5($pass);
+
+			try{
+				include $_SERVER['DOCUMENT_ROOT'].'/mydb.inc.php'; 		
+				$sqlStr = 'SELECT * FROM users WHERE login=:log AND password=:pass';
+		        $sqlExp = $GLOBALS['pdo'] -> prepare($sqlStr);
+		        $sqlExp -> bindValue(':log', $log);
+		        $sqlExp -> bindValue(':pass', $m_pass);
+		        $sqlExp -> execute();
+		        $resultArr = $sqlExp -> fetch();	 
+		        if ($resultArr[0] != '')
+		        {
+		        	session_start();
+		        	$_SESSION['LogedIn']=$resultArr[0];
+		        	$_SESSION['Login']=$log;
+		        	$_SESSION['Ip']=$_SERVER['REMOTE_ADDR'];
+		        	$_SESSION['Role']=$resultArr['role'];	                	
+		        	session_write_close();	        
+		        	// return $resultArr;	       	
+		        }
+		        elseif ($action=='login' && $resultArr[0]=='')
+		        {	        	
+		        	unset($_SESSION['LogedIn']);
+		        	unset($_SESSION['Login']);
+		        	unset($_SESSION['Ip']);
+		        	unset($_SESSION['Role']);	        	
+		            setcookie(session_name,'',time() - 3600, '/');
+		            $GLOBALS['loginError'] = 'Невірний логін або пароль';
+		            return $GLOBALS['loginError'];
+		            exit;	            	   		        	       
+		        }	         	       
+		    }
+		    catch(PDOexception $e)
+		    {
+	            $GLOBALS['error'] = 'Сталася помилка при виконанні запиту '. $e -> getMessage();
+	            return  $GLOBALS['error'];
+	            exit;
 	        }
-	        elseif ($action=='login' && $resultArr[0]!='')
-	        {	        	
-	        	unset($_SESSION['LogedIn']);
-	        	unset($_SESSION['Login']);
-	        	unset($_SESSION['Ip']);
-	        	unset($_SESSION['Role']);
-	        	$GLOBALS['loginError'] = 'Невірний логін або пароль';
-	            setcookie(session_name,'',time() - 3600, '/');	            	   		        	       
-	        }	         	       
-	    }
-	    catch(PDOexception $e)
-	    {
-            $GLOBALS['error'] = 'Сталася помилка при виконанні запиту '. $e -> getMessage();
-        }
 
+		}
 	}
-
 }
 
 function LogOut()
@@ -134,38 +144,47 @@ function UpdateUser($userId, $userName, $userEmail, $userLogin, $userRole)
 	}
 }
 
-function UpdateUserPassword($userId,$userPassword)
+function UpdateUserPassword($userId, $userPassword)
 {
 	$md5Pass=md5($userPassword);
 	try
 	{
 		include $_SERVER['DOCUMENT_ROOT'].'/mydb.inc.php'; 
-		$sqlStr='UPDATE users SET password=:userPassword WHERE id=:userId';
-		$sqlDo = $GLOBALS['pdo'] -> prepare($sqlStr);
-		$sqlDo -> bindValue(':id', $userId);
-		$sqlDo -> bindValue(':userPassword', $userPassword);
-		$sqlDo -> execute();		
+		$sqlStr = 'UPDATE users SET password=:userPassword WHERE id=:userId';		
+		$sqlDo = $GLOBALS['pdo'] -> prepare($sqlStr);		
+		$sqlDo -> bindValue(':userId', $userId);
+		$sqlDo -> bindValue(':userPassword', $md5Pass);	
+		$sqlDo -> execute();			
 	}
 	catch (PDOException $e)
 	{
 		$GLOBALS['error'] = 'Cталася помилка при зміні пароля користувача '. $e -> getMessage();
-		return $error;
+		return $GLOBALS['error'];
 	}
 }
 
 function ChangePassword($UserId, $Password, $PasswordConfirm)
 {
-	if ($Password==$PasswordConfirm)
+	if ($Password!=''&&$PasswordConfirm!='')
 	{
-		UpdateUserPassword($_POST['save'], $_POST['password']);
+		if ($Password==$PasswordConfirm)
+		{
+			UpdateUserPassword($UserId, $Password);			
+		}
+		else
+		{				
+			$GLOBALS['error'] = 'Пароль та підтвердження не сходяться!';			
+			return $GLOBALS['error'];	
+			exit;					
+		}		
 	}
 	else
-	{				
-		// $Caption = '<div class="column">Пароль</div><div class="column">Підтвердження паролю</div>';		
-		// $hiddenStyle='style="display: block;"'; 
-		$error = 'Пароль та підтвердження не сходяться!';			
-		return $error;
+	{
+		$GLOBALS['error'] = 'Пароль не може бути порожнім!';			
+		return $GLOBALS['error'];
+		exit;			
 	}
+
 }
 
 function UserSelect($UserId)

@@ -90,6 +90,14 @@
 	width: 20%;
 }
 
+.error
+{
+	text-align: center;
+	background-color: rgb(239,15,15,0.75);
+	color: #ffff;
+	width: 100%;
+}
+
 .modal-window
 {
 	display: none;
@@ -101,6 +109,25 @@
 	z-index: 99999;
 	background: rgb(0,0,0,0.75);
 	transition: opacity 400ms ease-in;
+}
+
+.modal-add,
+.modal-edit,
+.modal-pass
+{
+	display: block;
+}
+
+.modal-add .add-edit-form .password,
+.modal-pass .add-edit-form .password
+{
+	display: block;
+}
+
+.modal-pass .add-edit-form .user-fields,
+.modal-edit .add-edit-form .password
+{
+	display: none;
 }
 
 .add-edit-form
@@ -140,6 +167,17 @@
 	margin: 3px;
 	width: 30%;
 	display: inline-block;
+}
+
+.add-edit-form .close
+{
+	position: absolute;
+	border-radius: 50%;
+	padding: 3px 6px;
+	width: 25px;
+	top: 0;
+	right: 0;
+	color: #656562;	
 }
 
 .row:first-child .column:last-child
