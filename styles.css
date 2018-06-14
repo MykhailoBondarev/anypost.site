@@ -208,6 +208,31 @@ input.column
 	width: 900px;
 }
 
+.center-box .login-form
+{
+	text-align: center;
+	padding: 33% 0;
+}
+
+.center-box form .error
+{
+	padding: 2px;
+}
+
+.center-box .login-form div,
+.center-box .login-form p
+{
+	width: 20%;
+	margin: 5px auto;
+}
+
+button
+{
+	padding: 7px 21px;
+	margin: 2px;
+}
+
+
 @media screen and (max-width: 710px)
 {
 	.box

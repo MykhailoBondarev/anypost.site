@@ -1,10 +1,11 @@
 <?php 
 include_once $_SERVER['DOCUMENT_ROOT'].'/myfunctions.inc.php';
-if(isset($_GET['delpost'])|| isset($_POST['method-type'])||isset($_POST['action']))
+session_start(); 
+if(isset($_GET['delpost'])|| isset($_POST['method-type'])||isset($_POST['action'])) //||isset($_POST['save'])
 {
 	redirectHeader();
 }
-session_start(); 
+
 if (isset($_POST['action'])&&$_POST['action']=='logout')
 {
 	LogOut();
@@ -29,7 +30,7 @@ if (isset($_SESSION['LogedIn']))
 	 ?>
 	<div class="admin-panel">		
 		<h3><a href="<?php echo '/is_the_shiny_day' ?>">Адмін панель</a></h3>	
-		<div><?php echo 'Привіт, '.$_SESSION['Login'].'!'; ?></div>
+		<div><?php echo 'Привіт, '.$_SESSION['Name'].'!'; ?></div>
 		<div>
 			<form action="" method="POST"><input type="hidden" name="action" value="logout"><button type="submit">Вийти</button></form>
 		</div>	

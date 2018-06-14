@@ -33,6 +33,7 @@ function LogIn($log,$pass)
 		        {		        	
 		        	session_start();
 		        	$_SESSION['LogedIn']=$resultArr[0];
+		        	$_SESSION['Name']=$resultArr['name'];
 		        	$_SESSION['Login']=$log;
 		        	$_SESSION['Ip']=$_SERVER['REMOTE_ADDR'];
 		        	$_SESSION['Role']=$resultArr['role'];	                	
@@ -131,11 +132,10 @@ function UpdateUser($userId, $userName, $userEmail, $userLogin, $userRole)
 		$sqlExp -> bindValue(':userLogin', $userLogin);	
 		$sqlExp -> bindValue(':userId', $userId);
 		$sqlExp -> execute();
-		$resultArr = $sqlExp -> fetch();	
 	}
 	catch (PDOException $e)
 	{
-		$GLOBALS['error'] = 'Сталася помилка при оновленні даних користувача'. $e -> getMessage();
+		$GLOBALS['error'] = 'Сталася помилка при оновленні даних користувача '. $e -> getMessage();
 		return $error;		
 	}
 }
@@ -244,12 +244,59 @@ function AddUser($userName, $userEmail, $userLogin, $userRole, $userPass)
 		$sqlExp -> bindValue(':userLogin', $userLogin);
 		$sqlExp -> bindValue(':userPassword', $md5Pass);	
 		$sqlExp -> execute();
-		$resultArr = $sqlExp -> fetch();	
 	}
 	catch (PDOException $e)
 	{
-		$GLOBALS['error'] = 'Сталася помилка при оновленні даних користувача'. $e -> getMessage();
+		$GLOBALS['error'] = 'Сталася помилка при додаванні даних користувача'. $e -> getMessage();
 		return $error;		
+	}
+}
+
+function ModalError($windowType, $errorType)
+{
+	$GLOBALS['errorClass']='error';			
+	$GLOBALS['formClass']=$windowType;	
+
+	if (isset($GLOBALS['error'])&&$GLOBALS['error']!='')
+	{
+		$GLOBALS['errorClass']='error';
+		$GLOBALS['formClass']=$windowType;									
+	}	
+	if ($errorType=='blank')
+	{
+		$GLOBALS['error']='Будь ласка заповніть всі поля для вводу!';
+	}
+	if ($errorType=='mis')
+	{
+		$GLOBALS['error']='Пароль та підтвердження не сходяться!';
+	}
+
+	if ($windowType=='modal-pass')
+	{
+		$GLOBALS['userFields']='user-fields';
+	}
+	return $userFields;	
+	return $errorClass;
+	return $formClass;
+	return $error;	
+}
+
+function CountObjects($ObjectTable)
+{	
+	include $_SERVER['DOCUMENT_ROOT'].'/mydb.inc.php'; 
+	try
+	{
+		$sqlString = 'SELECT COUNT(*) FROM '.$ObjectTable;
+		$SqlDo = $GLOBALS['pdo'] -> prepare($sqlString);
+		$SqlDo -> execute();
+		$resultStr = $SqlDo -> fetch();
+		$GLOBALS['result'] = $resultStr[0];
+		return $GLOBALS['result'];
+	}
+	catch (PDOException $e)
+	{
+		$GLOBALS['error'] = 'Сталася помилка при отриманні кількості записів в таблиці: '.$ObjectTable.' '.$e->getMessage();
+		return $error;
 	}
 }
 ?>

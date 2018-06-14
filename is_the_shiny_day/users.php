@@ -4,81 +4,101 @@ if (isset($sessAuth)&&$sessAuth!=''||$_SESSION['LogedIn'])
 	$btnCaption1='Редагувати';
 	$btnCaption2='Видалити';
 	$btnFunc1='edit';
-	$btnFunc2='delete-id';
+	$btnFunc2='delete';
 	$btnAction1=$btnAction2='';
 	$formClass;
 	$errorClass;
 	$userFields;
-	$WindowStatus;
-	if (isset($_POST['edit'])||isset($_POST['add']))
-	{
-		if (isset($_POST['edit']))
+	$WindowStatus;	
+
+		if (isset($_POST['edit']) || $formClass=='modal-edit') 
 		{
 			$SelectedUser = UserSelect($_POST['user-id']);					
-			$modalHeader='Редагувати користувача';
+			$_SESSION['modalHeader']='Редагувати користувача '.htmlout($SelectedUser['name']);
 			$formClass='modal-edit';
 		}
-		elseif (isset($_POST['add']))		
+		elseif (isset($_POST['add']) || $formClass=='modal-add')	
 		{			 
-			$modalHeader='Додати користувача';	
+			$_SESSION['modalHeader']='Додати користувача';	
 			$formClass='modal-add';
 			$passwordFields='password';
 		}
-		$RolesList = ObjectList('roles');
-	}
 
-	if ($_POST['change-pass']==1)
+	if ($_POST['change-pass']==1 || $formClass=='modal-pass') 
 	{	
 			$SelectedUser = UserSelect($_POST['user-id']);
-			$modalHeader='Змінити пароль користувача '.htmlout($SelectedUser['name']);	
+			$_SESSION['modalHeader']='Змінити пароль користувача '.htmlout($SelectedUser['name']);	
 			$formClass='modal-pass';
 			$userFields='user-fields';
 			$passwordFields='password';		
 	}
-	// var_dump($formClass);
-	// var_dump($_POST['save']);
-	// var_dump($error);
-	
+	if ($_POST[''])
+	{
 
-	if (isset($_POST['save'])&&$_POST['window-type']=='modal-pass')
-	{	
-		ChangePassword($_POST['save'], $_POST['password'], $_POST['password-confirm']);	
-		if (isset($GLOBALS['error'])&&$GLOBALS['error']!='')
-		{		
-			 $errorClass='error';
-			 $formClass='modal-pass';
-			 $userFields='user-fields';
-			 // exit;
-		}
 	}
+
+	if (isset($_POST['save'])) 
+	{
+		if ($_POST['window-type']=='modal-pass'&&$_POST['cancel']!=1)
+		{	
+			ChangePassword($_POST['save'], $_POST['pass-field'], $_POST['confirm-pass-field']);	
+			ModalError($_POST['window-type'],'');
+		}
+		if ($_POST['window-type']=='modal-add')
+		{
+			if ($_POST['username']!=''&&$_POST['email']!=''&&$_POST['login']!=''&&$_POST['role']!=''&&$_POST['role']!='0'
+				&&$_POST['pass-field']!=''&&$_POST['confirm-pass-field']!=''&&$_POST['cancel']!=1)
+			{
+				if ($_POST['pass-field']==$_POST['confirm-pass-field'])
+				{
+					AddUser($_POST['username'], $_POST['email'], $_POST['login'], $_POST['role'], $_POST['password']);					
+					ModalError($_POST['window-type'],'');					
+				}
+				else
+				{				
+					ModalError($_POST['window-type'],'mis');			
+				}
+			}
+			else
+			{	
+				ModalError($_POST['window-type'],'blank');
+			}	
+		}
+		if ($_POST['window-type']=='modal-edit')
+		{
+			if ($_POST['username']!=''&&$_POST['email']!=''&&$_POST['login']!=''&&$_POST['role']!=''&&$_POST['role']!='0'&&$_POST['cancel']!=1)
+			{
+				UpdateUser($_POST['save'], $_POST['username'], $_POST['email'], $_POST['login'], $_POST['role']);
+				ModalError($_POST['window-type'],'');
+			}
+			else
+			{	
+				ModalError($_POST['window-type'],'blank');								
+			}
+		}
+	}	
+
 	if ($_POST['cancel']==1)
 	{
 			$error='';
 			$errorClass='';
-			$formClass='';					
+			$formClass='';				
 	}
-			 		
-		// $error = 'Будь ласка заповніть всі поля для вводу!';			
-				// exit;	
 
-		// $SelectedUser['id'] = $_POST['save'];
-		// $SelectedUser['name'] = $_POST['username'];
-		// $SelectedUser['email'] = $_POST['email'];
-		// $SelectedUser['login'] = $_POST['login'];
-		// $SelectedUser['role'] = $_POST['role'];	
+	if ($formClass=='modal-edit'|| $formClass=='modal-add')
+	{
+		$RolesList = ObjectList('roles');
+	}			 		
+
 	?>
-<!-- 	<pre>
-		<?php //print_r($RolesList); ?>
-	</pre> -->
-		<p class="error"><?php //echo $GLOBALS['error']; ?></p>
 		<form action="" method="POST">
 			<input type="hidden" name="add">
 			<button class="add-id" submit name="user-id"  value="<?php echo htmlout($user['id']); ?>">Додати користувача</button>
 		</form>
 		<div class="modal-window <?php echo ' '.$formClass; ?>">			
-		<form class="add-edit-form" method="POST" action="" >
+		<form class="add-edit-form" method="POST" action="?" >
 				<p class="<?php echo $errorClass; ?>"><?php echo $error; ?></p> 
-				<h4><?php echo $modalHeader; ?></h4>
+				<h4><?php echo $_SESSION['modalHeader']; ?></h4>
 				<input type="hidden" name="save" value="<?php echo htmlout($_POST['user-id']); ?>">
 				<input type="hidden" name="window-type" value="<?php echo $formClass; ?>">
 				<div class="<?php echo $userFields; ?>">
@@ -86,7 +106,7 @@ if (isset($sessAuth)&&$sessAuth!=''||$_SESSION['LogedIn'])
 					<input type="file">
 				</div>
 				<div class="<?php echo $userFields; ?>">
-				<label for="username">Ім'я</label>
+				<label for="username">Ім'я:</label>
 				<input type="text" class="" name="username" value="<?php echo htmlout($SelectedUser['name']); ?>">				
 				</div>
 				<div class="<?php echo $userFields; ?>">
@@ -114,11 +134,11 @@ if (isset($sessAuth)&&$sessAuth!=''||$_SESSION['LogedIn'])
 				</div>
 				<div class="password">
 					<label for="pass-field">Пароль:</label>
-					<input type="password" name="password">
+					<input type="password" name="pass-field">
 				</div>
 				<div class="password">
 					<label for="confirm-pass-field">Підтвердження пароля:</label>
-					<input type="password" name="password-confirm">					
+					<input type="password" name="confirm-pass-field">					
 				</div>	
 				<div>				
 				<button type="submit">Зберегти</button>
