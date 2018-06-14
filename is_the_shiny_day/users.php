@@ -32,7 +32,7 @@ if (isset($sessAuth)&&$sessAuth!=''||$_SESSION['LogedIn'])
 			$userFields='user-fields';
 			$passwordFields='password';		
 	}
-	if ($_POST[''])
+	if (isset($_POST['delete']))
 	{
 
 	}
