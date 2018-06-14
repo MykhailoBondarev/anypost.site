@@ -16,11 +16,16 @@
 		</tr>	
 	<div><?php 
 		foreach ($posts_data as $post) 
-		{				
+		{	
+			if ($post['author']==0)
+			{
+				$post['email']='@';
+				$post['name']='Невідомий';
+			}			
 			echo '<tr>';
 			echo '<td>'.htmlout($post['post_date']).'</td>';
-			echo '<td>'.htmlout($post['post_title']). '<p>Автор: <a href="mailto:'.htmlout($post['email']).'">'.htmlout($post['name']).'</a></p></td>';	
- 			echo '<td><pre>'.htmlout($post['post_text']).'</pre></td>';
+			echo '<td>'.htmlout($post['title']). '<p>Автор: <a href="mailto:'.htmlout($post['email']).'">'.htmlout($post['name']).'</a></p></td>';	
+ 			echo '<td><pre>'.htmlout($post['text']).'</pre></td>';
  			if ($_SESSION['LogedIn'])
  			{
  			echo '<td><form action="?editpost" method="post"><input name="editpost" hidden value="'.$post['ID'].'"><button>Редагувати пост</button></form></td>';

@@ -1,40 +1,39 @@
 <?php 
 if (isset($sessAuth)&&$sessAuth!=''||$_SESSION['LogedIn'])
 {	
-	$btnCaption1='Редагувати';
-	$btnCaption2='Видалити';
-	$btnFunc1='edit';
-	$btnFunc2='delete';
-	$btnAction1=$btnAction2='';
 	$formClass;
 	$errorClass;
 	$userFields;
 	$WindowStatus;	
 
-		if (isset($_POST['edit']) || $formClass=='modal-edit') 
-		{
-			$SelectedUser = UserSelect($_POST['user-id']);					
-			$_SESSION['modalHeader']='Редагувати користувача '.htmlout($SelectedUser['name']);
-			$formClass='modal-edit';
-		}
-		elseif (isset($_POST['add']) || $formClass=='modal-add')	
-		{			 
-			$_SESSION['modalHeader']='Додати користувача';	
-			$formClass='modal-add';
-			$passwordFields='password';
-		}
+	if (isset($_POST['edit']) || $formClass=='modal-edit') 
+	{
+		$SelectedUser = UserSelect($_POST['user-id']);					
+		$_SESSION['modalHeader']='Редагувати користувача '.htmlout($SelectedUser['name']);
+		$formClass='modal-edit';
+	}
+	elseif (isset($_POST['add']) || $formClass=='modal-add')	
+	{			 
+		$_SESSION['modalHeader']='Додати користувача';	
+		$formClass='modal-add';
+		$passwordFields='password';
+	}
 
 	if ($_POST['change-pass']==1 || $formClass=='modal-pass') 
 	{	
-			$SelectedUser = UserSelect($_POST['user-id']);
-			$_SESSION['modalHeader']='Змінити пароль користувача '.htmlout($SelectedUser['name']);	
-			$formClass='modal-pass';
-			$userFields='user-fields';
-			$passwordFields='password';		
+		$SelectedUser = UserSelect($_POST['user-id']);
+		$_SESSION['modalHeader']='Змінити пароль користувача '.htmlout($SelectedUser['name']);	
+		$formClass='modal-pass';
+		$userFields='user-fields';
+		$passwordFields='password';		
 	}
-	if (isset($_POST['delete']))
+	if (isset($_POST['delete']) || $formClass=='modal-delete')
 	{
-
+		$SelectedUser = UserSelect($_POST['user-id']);	
+		$_SESSION['modalHeader']='Ви наполягаєте на видаленні користувача '.htmlout($SelectedUser['name']).'?';
+		$formClass='modal-delete';
+		$userFields='user-fields';
+		$passwordFields='';
 	}
 
 	if (isset($_POST['save'])) 
@@ -75,6 +74,11 @@ if (isset($sessAuth)&&$sessAuth!=''||$_SESSION['LogedIn'])
 			{	
 				ModalError($_POST['window-type'],'blank');								
 			}
+		}
+		if ($_POST['window-type']=='modal-delete'&&$_POST['cancel']!=1)
+		{
+			DeleteUser($_POST['save']);
+			ModalError($_POST['window-type'],'');
 		}
 	}	
 
@@ -175,12 +179,12 @@ if (isset($sessAuth)&&$sessAuth!=''||$_SESSION['LogedIn'])
 			</div>
 			<div class="button-box">
 				<form method="POST" action="">
-					<input type="hidden" name="<?php echo $btnFunc1; ?>"></input>
-					<button type="submit" name="user-id"  value="<?php echo htmlout($user['id']); ?>"><?php echo $btnCaption1; ?></button>
+					<input type="hidden" name="edit"></input>
+					<button type="submit" name="user-id"  value="<?php echo htmlout($user['id']); ?>">Редагувати</button>
 				</form>
 				<form method="POST" action="">
-					<input type="hidden" name="<?php echo $btnFunc2; ?>" value="<?php echo htmlout($user['id']); ?>"></input>
-					<button type="submit" name="user-id"  value="<?php echo htmlout($user['id']); ?>"><?php echo $btnCaption2; ?></button>
+					<input type="hidden" name="delete" value="<?php echo htmlout($user['id']); ?>"></input>
+					<button type="submit" name="user-id"  value="<?php echo htmlout($user['id']); ?>">Видалити</button>
 				</form>		
 
 			<form class="" method="POST" action="">	

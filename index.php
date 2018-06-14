@@ -31,7 +31,7 @@ if(isset($post_id))
 {
 	try
 	{
-		$sql = 'DELETE FROM posts WHERE ID=:post_id';
+		$sql = 'DELETE FROM posts WHERE id=:post_id';
 		$delete_sql = $pdo -> prepare($sql);
 		$delete_sql->bindValue(':post_id', $post_id);
 		$delete_sql->execute();
@@ -54,9 +54,9 @@ if (isset($_POST['method-type'])&&isset($_POST['post-title'])&&isset($_POST['pos
 		{
 			$sql = 'INSERT INTO posts SET
 			post_date = NOW(),
-			post_title = :post_title,
-			post_text = :post_text,
-			authorid = :authorid';
+			title = :post_title,
+			text = :post_text,
+			author = :authorid';
 			$insert_sql = $pdo -> prepare($sql);
 			$insert_sql->bindValue(':post_title', $_POST['post-title']);
 			$insert_sql->bindValue(':post_text', $_POST['post-text']);
@@ -77,8 +77,8 @@ if (isset($_POST['method-type'])&&isset($_POST['post-title'])&&isset($_POST['pos
 		{
 			$sql = 'UPDATE posts SET 
 			post_date = NOW(), 
-			post_title = :post_title,
-			post_text = :post_text WHERE id=:post_id';
+			title = :post_title,
+			text = :post_text WHERE id=:post_id';
 			$requestObj = $pdo -> prepare($sql);
 			$requestObj -> bindValue(':post_id', $_POST['post-id']);
 			$requestObj -> bindValue(':post_title', $_POST['post-title']);
@@ -98,7 +98,7 @@ if (isset($_POST['method-type'])&&isset($_POST['post-title'])&&isset($_POST['pos
 try
 {
  	$sql = 'SELECT posts.*, users.name, users.email FROM posts LEFT JOIN users
- 	ON posts.authorid=users.id ORDER BY post_date DESC';
+ 	ON posts.author=users.id ORDER BY post_date DESC';
  	$result = $pdo->query($sql);
  	
 }

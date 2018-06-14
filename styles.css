@@ -34,6 +34,12 @@
 	border: 1px solid #000;
 	display: inline-block;
 }
+.main-block > label span:last-child
+{
+	background: #ced8da; /*#aeb4b5;*/
+	padding: 1px;
+	border-radius: 25%;
+}
 
 .main-block input[type="radio"]:checked + label 
 {
@@ -113,7 +119,8 @@
 
 .modal-add,
 .modal-edit,
-.modal-pass
+.modal-pass,
+.modal-delete
 {
 	display: block;
 }
@@ -125,7 +132,9 @@
 }
 
 .modal-pass .add-edit-form .user-fields,
-.modal-edit .add-edit-form .password
+.modal-edit .add-edit-form .password,
+.modal-delete .add-edit-form .password,
+.modal-delete .add-edit-form .user-fields
 {
 	display: none;
 }

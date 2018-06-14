@@ -243,12 +243,33 @@ function AddUser($userName, $userEmail, $userLogin, $userRole, $userPass)
 		$sqlExp -> bindValue(':userEmail', $userEmail);
 		$sqlExp -> bindValue(':userLogin', $userLogin);
 		$sqlExp -> bindValue(':userPassword', $md5Pass);	
-		$sqlExp -> execute();
+		$sqlExp -> execute();	
 	}
 	catch (PDOException $e)
 	{
-		$GLOBALS['error'] = 'Сталася помилка при додаванні даних користувача'. $e -> getMessage();
+		$GLOBALS['error'] = 'Сталася помилка при додаванні даних користувача '. $e -> getMessage();
 		return $error;		
+	}
+}
+
+function DeleteUser($UserId)
+{
+	// include $_SERVER['DOCUMENT_ROOT'].'/mydb.inc.php'; 
+	try
+	{
+		$SqlStrPosts = 'UPDATE posts SET author=0 WHERE author=:UserId';
+		$SqlExe = $GLOBALS['pdo'] -> prepare($SqlStrPosts);
+		$SqlExe -> bindValue(':UserId', $UserId);
+		$SqlExe -> execute();
+		$SqlStr = 'DELETE FROM users WHERE id=:UserId';
+		$SqlExe = $GLOBALS['pdo'] -> prepare($SqlStr);
+		$SqlExe -> bindValue(':UserId', $UserId);
+		$SqlExe -> execute();
+		echo 'OK!';
+	}
+	catch (PDOException $e)
+	{
+		$GLOBALS['error'] = 'Сталася помилка при видаленні користувача '.$e->getMessage();
 	}
 }
 
@@ -271,10 +292,22 @@ function ModalError($windowType, $errorType)
 		$GLOBALS['error']='Пароль та підтвердження не сходяться!';
 	}
 
-	if ($windowType=='modal-pass')
+	if ($windowType=='modal-pass'||$windowType=='modal-delete')
 	{
 		$GLOBALS['userFields']='user-fields';
 	}
+
+	if ($windowType=='modal-delete'||$windowType=='modal-edit')
+	{
+		$GLOBALS['passwordFields']='';
+	}
+
+	if ($windowType=='modal-add'||$windowType=='modal-pass')
+	{
+		$GLOBALS['passwordFields']='password';
+	}
+
+	return $passwordFields;
 	return $userFields;	
 	return $errorClass;
 	return $formClass;
