@@ -1,4 +1,5 @@
 <?php 
+include $_SERVER['DOCUMENT_ROOT'].'/mydb.inc.php'; 
 function redirectHeader()
 {
 	header('Location: .');	
@@ -21,8 +22,7 @@ function LogIn($log,$pass)
 		{
 			$m_pass=md5($pass);
 
-			try{
-				include $_SERVER['DOCUMENT_ROOT'].'/mydb.inc.php'; 		
+			try{	
 				$sqlStr = 'SELECT * FROM users WHERE login=:log AND password=:pass';
 		        $sqlExp = $GLOBALS['pdo'] -> prepare($sqlStr);
 		        $sqlExp -> bindValue(':log', $log);
@@ -73,8 +73,7 @@ function LogOut()
 		unset($_SESSION['Role']);
 		session_destroy();	
 	}
-		setcookie('PHPSESSID','', time() - 6000, '/'); 	
-		header('Location: .');		
+		// setcookie('PHPSESSID','', time() - 6000, '/'); 	
 }
 
 
@@ -82,7 +81,6 @@ function ObjectList($objectTable)
 {
 		try
 		{
-			include $_SERVER['DOCUMENT_ROOT'].'/mydb.inc.php'; 
 			$sqlStr = 'SELECT * FROM '.$objectTable;		
 			$resultArr = $GLOBALS['pdo'] -> query($sqlStr);	
 			while ($object = $resultArr -> fetch())
@@ -101,8 +99,7 @@ function ObjectList($objectTable)
 function ObjectSelect($ObjectId, $objectTable)
 {
 	try
-	{
-		include $_SERVER['DOCUMENT_ROOT'].'/mydb.inc.php'; 
+	{ 
 		$selectStr = 'SELECT * FROM '.$objectTable.' WHERE id=:Id';
 		$sqlExec = $GLOBALS['pdo'] -> prepare($selectStr);
 		$sqlExec -> bindValue(':Id',$ObjectId);
@@ -121,8 +118,6 @@ function UpdateUser($userId, $userName, $userEmail, $userLogin, $userRole)
 {
 	try
 	{
-		include $_SERVER['DOCUMENT_ROOT'].'/mydb.inc.php'; 
-
 		$sqlStr = 'UPDATE users SET name=:userName, email=:userEmail, 
 		login=:userLogin, role=:userRole WHERE id=:userId';
 		$sqlExp = $GLOBALS['pdo'] -> prepare($sqlStr);
@@ -132,6 +127,8 @@ function UpdateUser($userId, $userName, $userEmail, $userLogin, $userRole)
 		$sqlExp -> bindValue(':userLogin', $userLogin);	
 		$sqlExp -> bindValue(':userId', $userId);
 		$sqlExp -> execute();
+		$GLOBALS['ok'] = true;
+		return $ok;
 	}
 	catch (PDOException $e)
 	{
@@ -145,12 +142,13 @@ function UpdateUserPassword($userId, $userPassword)
 	$md5Pass=md5($userPassword);
 	try
 	{
-		include $_SERVER['DOCUMENT_ROOT'].'/mydb.inc.php'; 
 		$sqlStr = 'UPDATE users SET password=:userPassword WHERE id=:userId';		
 		$sqlDo = $GLOBALS['pdo'] -> prepare($sqlStr);		
 		$sqlDo -> bindValue(':userId', $userId);
 		$sqlDo -> bindValue(':userPassword', $md5Pass);	
-		$sqlDo -> execute();			
+		$sqlDo -> execute();	
+		$GLOBALS['ok'] = true;
+		return $ok;			
 	}
 	catch (PDOException $e)
 	{
@@ -166,7 +164,11 @@ function ChangePassword($UserId, $Password, $PasswordConfirm)
 	{
 		if ($Password==$PasswordConfirm)
 		{
-			UpdateUserPassword($UserId, $Password);			
+			UpdateUserPassword($UserId, $Password);	
+			if ($_SESSION['LogedIn']==$UserId)
+			{
+				LogOut();
+			}						
 		}
 		else
 		{				
@@ -188,7 +190,6 @@ function UserSelect($UserId)
 {
 	try
 	{
-		include $_SERVER['DOCUMENT_ROOT'].'/mydb.inc.php'; 
 		$selectStr = 'SELECT users.*, roles.* FROM users 
 		LEFT JOIN roles ON
 		users.role=roles.id	
@@ -210,7 +211,6 @@ function UsersList()
 {
 		try
 		{
-			include $_SERVER['DOCUMENT_ROOT'].'/mydb.inc.php'; 
 			$sqlStr = 'SELECT users.*, roles.description FROM users 
 			LEFT JOIN roles ON 
 			users.role=roles.id';		
@@ -233,8 +233,6 @@ function AddUser($userName, $userEmail, $userLogin, $userRole, $userPass)
 	$md5Pass = md5($userPass);
 	try
 	{
-		include $_SERVER['DOCUMENT_ROOT'].'/mydb.inc.php'; 
-
 		$sqlStr = 'INSERT users SET name=:userName, email=:userEmail, 
 		login=:userLogin, role=:userRole, password=:userPassword';
 		$sqlExp = $GLOBALS['pdo'] -> prepare($sqlStr);
@@ -244,6 +242,8 @@ function AddUser($userName, $userEmail, $userLogin, $userRole, $userPass)
 		$sqlExp -> bindValue(':userLogin', $userLogin);
 		$sqlExp -> bindValue(':userPassword', $md5Pass);	
 		$sqlExp -> execute();	
+		$GLOBALS['ok'] = true;
+		return $ok;
 	}
 	catch (PDOException $e)
 	{
@@ -254,7 +254,6 @@ function AddUser($userName, $userEmail, $userLogin, $userRole, $userPass)
 
 function DeleteUser($UserId)
 {
-	// include $_SERVER['DOCUMENT_ROOT'].'/mydb.inc.php'; 
 	try
 	{
 		$SqlStrPosts = 'UPDATE posts SET author=0 WHERE author=:UserId';
@@ -265,7 +264,12 @@ function DeleteUser($UserId)
 		$SqlExe = $GLOBALS['pdo'] -> prepare($SqlStr);
 		$SqlExe -> bindValue(':UserId', $UserId);
 		$SqlExe -> execute();
-		echo 'OK!';
+		$GLOBALS['ok'] = true;
+		return $ok;
+		if ($_SESSION['LogedIn']==$UserId)
+		{
+			LogOut();
+		}		
 	}
 	catch (PDOException $e)
 	{
@@ -315,8 +319,7 @@ function ModalError($windowType, $errorType)
 }
 
 function CountObjects($ObjectTable)
-{	
-	include $_SERVER['DOCUMENT_ROOT'].'/mydb.inc.php'; 
+{		
 	try
 	{
 		$sqlString = 'SELECT COUNT(*) FROM '.$ObjectTable;
@@ -324,12 +327,41 @@ function CountObjects($ObjectTable)
 		$SqlDo -> execute();
 		$resultStr = $SqlDo -> fetch();
 		$GLOBALS['result'] = $resultStr[0];
-		return $GLOBALS['result'];
+		return $result;
 	}
 	catch (PDOException $e)
 	{
 		$GLOBALS['error'] = 'Сталася помилка при отриманні кількості записів в таблиці: '.$ObjectTable.' '.$e->getMessage();
 		return $error;
 	}
+}
+
+function GetAllPosts()
+{
+	try
+	{
+ 		$sql = 'SELECT posts.*, users.name, users.email FROM posts LEFT JOIN users
+ 		ON posts.author=users.id ORDER BY post_date DESC';
+ 		$sqlPrep= $GLOBALS['pdo'] -> prepare($sql);
+ 		$sqlPrep -> execute();
+ 		$Allposts = $sqlPrep -> fetch();
+ 		$GLOBALS['$Allposts'];
+ 		return $Allposts; 	
+	}
+	catch (PDOException $e)
+	{
+		$error = 'Помилка при отриманні списку постів ' . $e->getMessage();
+		echo $error;
+		include 'error.php';
+ 		exit();
+	}
+
+	$title_id=0;
+	while ($row = $result->fetch())
+	{		
+ 	 	$posts_data[] = $row; 
+ 		++$title_id; 	
+	}
+	
 }
 ?>

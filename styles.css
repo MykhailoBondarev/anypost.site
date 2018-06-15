@@ -54,7 +54,7 @@
  border: 1px solid #000;
 }
 
-.users-box, .row, .text-box
+.objects-box, .row, .text-box
 {
 	overflow: auto;	
 }

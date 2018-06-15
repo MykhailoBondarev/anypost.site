@@ -3,9 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Хост: 127.0.0.1:3306
--- Час створення: Чрв 12 2018 р., 20:59
--- Версія сервера: 5.5.58
--- Версія PHP: 5.5.38
+-- Час створення: Чрв 15 2018 р., 15:50
+-- Версія сервера: 5.7.20
+-- Версія PHP: 7.2.0
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 SET AUTOCOMMIT = 0;
@@ -21,6 +21,8 @@ SET time_zone = "+00:00";
 --
 -- База даних: `poststream`
 --
+CREATE DATABASE IF NOT EXISTS `poststream` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;
+USE `poststream`;
 
 -- --------------------------------------------------------
 
@@ -52,18 +54,18 @@ CREATE TABLE `postcategory` (
 --
 
 CREATE TABLE `posts` (
-  `ID` int(24) NOT NULL,
+  `id` int(24) NOT NULL,
   `post_date` datetime NOT NULL,
-  `post_title` text NOT NULL,
-  `post_text` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `authorid` int(64) DEFAULT '3'
+  `title` longtext NOT NULL,
+  `text` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `author` int(64) DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
 -- Дамп даних таблиці `posts`
 --
 
-INSERT INTO `posts` (`ID`, `post_date`, `post_title`, `post_text`, `authorid`) VALUES
+INSERT INTO `posts` (`id`, `post_date`, `title`, `text`, `author`) VALUES
 (1, '2018-06-04 12:07:58', 'Where were you last night?', 'Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod\r\ntempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,\r\nquis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo\r\nconsequat. Duis aute irure dolor in reprehenderit in voluptate velit esse\r\ncillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non\r\nproident, sunt in culpa qui officia deserunt mollit anim id est laborum.\r\n\r\nОТ ФІГНЯ!!!!!!!!!!', 2),
 (2, '2018-06-04 12:15:06', 'Біда сталася (Оновлено)', 'Взяв та оновив!!!\r\nРахуй все в базі переписав нахрін.\r\nТак же не можна!!!', 1),
 (3, '2018-06-04 14:13:33', 'Не робіть так люди, бо лихо Вам буде:', 'Крім мабуть авторів, бо вони не апдейтились...', 2),
@@ -73,7 +75,8 @@ INSERT INTO `posts` (`ID`, `post_date`, `post_title`, `post_text`, `authorid`) V
 (44, '2018-06-12 11:02:01', 'ще один тестовий пост', 'Тестування це гемор коли все працює аби як.', 1),
 (49, '2018-06-12 11:12:38', 'от жопа', 'Що це за автор?1111щшщ', 1),
 (55, '2018-06-12 11:36:18', '- Виправлено ', 'Відображення автора поста', 2),
-(60, '2018-06-12 12:24:39', '- Виправлено', 'Помилку: Cannot modify header information - headers already sent by', 2);
+(60, '2018-06-12 12:24:39', '- Виправлено', 'Помилку: Cannot modify header information - headers already sent by', 2),
+(63, '2018-06-15 15:49:12', '-Додано', '- В адмінці можливість: додавати, редагувати, видаляти, змінювати пароль користувачів\r\n- Модальні вікна\r\n- Крихітні правки ', 2);
 
 -- --------------------------------------------------------
 
@@ -114,7 +117,7 @@ CREATE TABLE `userrole` (
 
 CREATE TABLE `users` (
   `id` int(11) NOT NULL,
-  `avatar_url` varchar(255) NOT NULL,
+  `avatar` mediumblob NOT NULL,
   `name` varchar(255) DEFAULT NULL,
   `email` varchar(255) DEFAULT NULL,
   `login` varchar(255) NOT NULL,
@@ -126,7 +129,7 @@ CREATE TABLE `users` (
 -- Дамп даних таблиці `users`
 --
 
-INSERT INTO `users` (`id`, `avatar_url`, `name`, `email`, `login`, `password`, `role`) VALUES
+INSERT INTO `users` (`id`, `avatar`, `name`, `email`, `login`, `password`, `role`) VALUES
 (1, '', 'Mr. T', 'tguy@wert.com', 'mr', '7363a0d0604902af7b70b271a0b96480', 0),
 (2, '', 'Zenko', 'zenko@ex.ua', 'zenko', '2c216b1ba5e33a27eb6d3df7de7f8c36', 1);
 
@@ -150,7 +153,7 @@ ALTER TABLE `postcategory`
 -- Індекси таблиці `posts`
 --
 ALTER TABLE `posts`
-  ADD UNIQUE KEY `qaz` (`ID`);
+  ADD UNIQUE KEY `qaz` (`id`);
 
 --
 -- Індекси таблиці `roles`
@@ -168,7 +171,8 @@ ALTER TABLE `userrole`
 -- Індекси таблиці `users`
 --
 ALTER TABLE `users`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `login` (`login`);
 
 --
 -- AUTO_INCREMENT для збережених таблиць
@@ -184,7 +188,7 @@ ALTER TABLE `categories`
 -- AUTO_INCREMENT для таблиці `posts`
 --
 ALTER TABLE `posts`
-  MODIFY `ID` int(24) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=63;
+  MODIFY `id` int(24) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=64;
 
 --
 -- AUTO_INCREMENT для таблиці `roles`

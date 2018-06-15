@@ -1,7 +1,7 @@
 <?php 
 include_once $_SERVER['DOCUMENT_ROOT'].'/myfunctions.inc.php';
 session_start(); 
-if(isset($_GET['delpost'])|| isset($_POST['method-type'])||isset($_POST['action'])) //||isset($_POST['save'])
+if(isset($_GET['delpost'])|| isset($_POST['method-type'])||isset($_POST['action'])) 
 {
 	redirectHeader();
 }
@@ -19,7 +19,7 @@ if (isset($_SESSION['LogedIn']))
 <html>
 <head>
 	<meta charset="utf-8">
-	<meta http-equiv="X-UA-Compatible" content="IE=edge" name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible"  name="viewport" content="width=device-width, initial-scale=1.0">
 	<title><?php echo $pageTitle.'::'.$adminTitle; ?></title>
 	<link rel="stylesheet" type="text/css" href="/styles.css"> 
 </head>

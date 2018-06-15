@@ -95,28 +95,8 @@ if (isset($_POST['method-type'])&&isset($_POST['post-title'])&&isset($_POST['pos
 	}
 }
 
-try
-{
- 	$sql = 'SELECT posts.*, users.name, users.email FROM posts LEFT JOIN users
- 	ON posts.author=users.id ORDER BY post_date DESC';
- 	$result = $pdo->query($sql);
- 	
-}
-catch (PDOException $e)
-{
-	$error = 'Помилка при отриманні даних: ' . $e->getMessage();
-	echo $error;
-	include 'error.php';
- 	exit();
-}
+//SELECT POSTS HERE!!!
 
-	$title_id=0;
-	while ($row = $result->fetch())
-	{		
- 	 	$posts_data[] = $row; 
- 		++$title_id; 	
-	}
-	
  include $_SERVER['DOCUMENT_ROOT'].'/postspage.php';
 
  echo "<details>

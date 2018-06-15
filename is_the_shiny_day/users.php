@@ -1,16 +1,16 @@
 <?php 
-if (isset($sessAuth)&&$sessAuth!=''||$_SESSION['LogedIn'])
+if ($_SESSION['LogedIn'])
 {	
 	$formClass;
 	$errorClass;
 	$userFields;
 	$WindowStatus;	
-
+	$BtnType='Зберегти';
 	if (isset($_POST['edit']) || $formClass=='modal-edit') 
 	{
 		$SelectedUser = UserSelect($_POST['user-id']);					
 		$_SESSION['modalHeader']='Редагувати користувача '.htmlout($SelectedUser['name']);
-		$formClass='modal-edit';
+		$formClass='modal-edit';		
 	}
 	elseif (isset($_POST['add']) || $formClass=='modal-add')	
 	{			 
@@ -34,6 +34,7 @@ if (isset($sessAuth)&&$sessAuth!=''||$_SESSION['LogedIn'])
 		$formClass='modal-delete';
 		$userFields='user-fields';
 		$passwordFields='';
+		$BtnType='Видалити';
 	}
 
 	if (isset($_POST['save'])) 
@@ -50,7 +51,15 @@ if (isset($sessAuth)&&$sessAuth!=''||$_SESSION['LogedIn'])
 			{
 				if ($_POST['pass-field']==$_POST['confirm-pass-field'])
 				{
-					AddUser($_POST['username'], $_POST['email'], $_POST['login'], $_POST['role'], $_POST['password']);					
+					if (filter_var($_POST['email'], FILTER_VALIDATE_EMAIL))
+					{
+						AddUser($_POST['username'], $_POST['email'], $_POST['login'], $_POST['role'], $_POST['password']);								
+					}
+					else
+					{
+						$errorClass = 'error';
+						$error = 'Не вірний формат електронної пошти!';
+					}			
 					ModalError($_POST['window-type'],'');					
 				}
 				else
@@ -67,7 +76,16 @@ if (isset($sessAuth)&&$sessAuth!=''||$_SESSION['LogedIn'])
 		{
 			if ($_POST['username']!=''&&$_POST['email']!=''&&$_POST['login']!=''&&$_POST['role']!=''&&$_POST['role']!='0'&&$_POST['cancel']!=1)
 			{
-				UpdateUser($_POST['save'], $_POST['username'], $_POST['email'], $_POST['login'], $_POST['role']);
+				if (filter_var($_POST['email'], FILTER_VALIDATE_EMAIL))
+				{	
+					UpdateUser($_POST['save'], $_POST['username'], $_POST['email'], $_POST['login'], $_POST['role']);
+				}
+				else 
+				{
+					$errorClass = 'error';
+					$error = 'Не вірний формат електронної пошти!';
+				}
+
 				ModalError($_POST['window-type'],'');
 			}
 			else
@@ -80,9 +98,37 @@ if (isset($sessAuth)&&$sessAuth!=''||$_SESSION['LogedIn'])
 			DeleteUser($_POST['save']);
 			ModalError($_POST['window-type'],'');
 		}
+		if (!is_null($_FILES['avatar-img'])&&$_POST['cancel']!=1)
+		{
+			var_dump($avatarArr);
+			var_dump($_FILES['avatar-img']['error']);	
+			$avatarArr = $_FILES['avatar-img'];
+			// if ($avatarArr['size']<=$_POST['MAX_FILE_SIZE'])
+			// {
+			// 	if (preg_match('/^image\/p?.jpeg$/i', $_FILES['upload']['type']) or
+ 		// 			preg_match('/^image\/.gif$/i', $_FILES['upload']['type']) or
+ 		// 			preg_match('/^image\/(x-)?.png$/i', $_FILES['upload']['type']) or
+ 		// 			preg_match('/^image\/p?.jpg$/i', $_FILES['upload']['type']))
+ 		// 			{
+ 		// 				// відправка в бд
+ 		// 			}
+ 		// 			else
+ 		// 			{
+ 		// 				$errorClass = 'error';
+			// 			$error = 'Недопустиме розширення файлу. Підтримуються лише: JPEG, JPG, PNG, GIF';
+			// 			// exit;						
+ 		// 			}
+			// }
+			// else
+			// {
+			// 	$errorClass = 'error';
+			// 	$error = 'Картинка перевищує допустимий розмір: '. $_POST['MAX_FILE_SIZE'];
+			// 	// exit;
+			// }
+		}
 	}	
 
-	if ($_POST['cancel']==1)
+	if ($_POST['cancel']==1 or $ok)
 	{
 			$error='';
 			$errorClass='';
@@ -92,22 +138,28 @@ if (isset($sessAuth)&&$sessAuth!=''||$_SESSION['LogedIn'])
 	if ($formClass=='modal-edit'|| $formClass=='modal-add')
 	{
 		$RolesList = ObjectList('roles');
-	}			 		
-
-	?>
-		<form action="" method="POST">
+	}		
+	?>	
+	<pre>
+		<?php var_dump($_FILES['avatar-img']); 
+		echo $error;
+		?>
+	</pre>
+		<form action="" method="POST"> 
 			<input type="hidden" name="add">
 			<button class="add-id" submit name="user-id"  value="<?php echo htmlout($user['id']); ?>">Додати користувача</button>
 		</form>
-		<div class="modal-window <?php echo ' '.$formClass; ?>">			
-		<form class="add-edit-form" method="POST" action="?" >
+		<div class="modal-window <?php echo ' '.$formClass; ?>" reload="<?php echo $ok; ?>">			
+		<form enctype="multipart/form-data" class="add-edit-form" method="POST" action="">
+				<?php var_dump($_FILES['avatar-img']['tmp_name']); ?>
 				<p class="<?php echo $errorClass; ?>"><?php echo $error; ?></p> 
 				<h4><?php echo $_SESSION['modalHeader']; ?></h4>
 				<input type="hidden" name="save" value="<?php echo htmlout($_POST['user-id']); ?>">
 				<input type="hidden" name="window-type" value="<?php echo $formClass; ?>">
 				<div class="<?php echo $userFields; ?>">
-					<img src="" alt="">
-					<input type="file">
+					<img src="<?php echo htmlout($SelectedUser['avatar']); ?>" alt="">
+					<input type="hidden" name="MAX_FILE_SIZE" value="400k">					
+					<input type="file" name="avatar-img" value="<?php //echo htmlout($SelectedUser['avatar']); ?>">
 				</div>
 				<div class="<?php echo $userFields; ?>">
 				<label for="username">Ім'я:</label>
@@ -145,7 +197,7 @@ if (isset($sessAuth)&&$sessAuth!=''||$_SESSION['LogedIn'])
 					<input type="password" name="confirm-pass-field">					
 				</div>	
 				<div>				
-				<button type="submit">Зберегти</button>
+				<button type="submit"><?php echo $BtnType; ?></button>
 				<button name="cancel" value="1">Скасувати</button>
 				<button class="close" name="cancel" value="1">X</button>						
 				</div>
