@@ -96,6 +96,7 @@ if (isset($_POST['method-type'])&&isset($_POST['post-title'])&&isset($_POST['pos
 }
 
 //SELECT POSTS HERE!!!
+$postQuantity = CountObjects('posts');
 
  include $_SERVER['DOCUMENT_ROOT'].'/postspage.php';
 

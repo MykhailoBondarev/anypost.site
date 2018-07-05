@@ -1,17 +1,17 @@
 <?php 
 include_once $_SERVER['DOCUMENT_ROOT'].'/myfunctions.inc.php';
 session_start(); 
-if(isset($_GET['delpost'])|| isset($_POST['method-type'])||isset($_POST['action'])) 
-{
+if(isset($_GET['delpost']) || isset($_POST['action']) || $_POST['method'] || $_POST['cancel']==1 || isset($_POST['method']) || isset($_POST['method-type']))
+{	
 	redirectHeader();
 }
-
 if (isset($_POST['action'])&&$_POST['action']=='logout')
 {
 	LogOut();
 }
 if (isset($_SESSION['LogedIn']))
 {
+	$pageTitle='';
 	$adminTitle='Адмін панель';
 }
 ?>
@@ -20,7 +20,7 @@ if (isset($_SESSION['LogedIn']))
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible"  name="viewport" content="width=device-width, initial-scale=1.0">
-	<title><?php echo $pageTitle.'::'.$adminTitle; ?></title>
+	<title><?php echo $pageTitle.'::'.$adminTitle.'::'; ?></title>
 	<link rel="stylesheet" type="text/css" href="/styles.css"> 
 </head>
 <body>

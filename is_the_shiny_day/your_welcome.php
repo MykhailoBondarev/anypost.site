@@ -1,33 +1,67 @@
 <?php 
 if ($_SESSION['LogedIn'])
 { 
+	$quantityUsers = CountObjects('users');
+	$quantityPosts = CountObjects('posts');
+	$quantityCategories = CountObjects('categories');
+	if (isset($_POST['tab']))
+	{
+		$_SESSION['tab'] = $_POST['tab'];
+	}
+	if (isset($_SESSION['tab']))
+	{
+		$activeTab=array();
+		$countTab=0;
+		while ($countTab <= $_SESSION['tab'])
+		{
+			if ($_SESSION['tab']==$countTab)
+			{
+				$activeTab[$countTab]='active-tab';	
+				break;			 	
+			} 
+			$countTab++;
+		}	
+	}
 	?>
-		<div class="main-block">
-			<input type="radio" checked="checked" id="users" name="lists">			
-			<label for="users" id="users">
-			<input type="hidden" name="users-tab" value="1">
+		<form class="main-block" action="" method="post">
+			<button class="<?php echo $activeTab[1]; ?>" type="radio" name="tab" value="1">	
 			<span>Користувачі</span>
-			<span><?php echo CountObjects('users'); ?></span>	
-			</label>			
-			<input type="radio" id="posts" name="lists">			
-			<label for="posts" id="posts">
-			<input type="hidden" name="posts-tab" value="">	
+			<span><?php echo $quantityUsers; ?></span>	
+			</button>
+			<button class="<?php echo $activeTab[2]; ?>" type="radio" name="tab" value="2">	
 			<span>Пости</span>	
-			<span><?php echo CountObjects('posts'); ?></span>	
-			</label>
-			<input type="radio" id="category" name="lists">
-			<input type="hidden" name="categories-tab" value="">
-			<label for="category" id="categories">
+			<span><?php echo $quantityPosts; ?></span>	
+			</button>
+			<button class="<?php echo $activeTab[3]; ?>" type="radio" name="tab" value="3">
 			<span>Категорії</span>
-			<span><?php echo CountObjects('categories'); ?></span>	
-			</label>			
-			<div class="objects-box"><?php include $_SERVER['DOCUMENT_ROOT'].'/is_the_shiny_day/users.php'; ?></div>
-			<div class="objects-box"><?php include $_SERVER['DOCUMENT_ROOT'].'/is_the_shiny_day/posts.php'; ?></div>
-			<div class="objects-box"><?php  //include $_SERVER['DOCUMENT_ROOT'].'/is_the_shiny_day/category.php'; ?></div>
-		</div>		
-	</div>
-</body>
-</html>
+			<span><?php echo $quantityCategories; ?></span>	
+			</button>
+		</form>				
+				<?php 
+					if ($_SESSION['tab']==1)
+					{ ?>
+						<div class="objects-box">
+							<?php include $_SERVER['DOCUMENT_ROOT'].'/is_the_shiny_day/users.php';  ?>
+						</div>
+				<?php 	}
+					if ($_SESSION['tab']==2)
+					{ ?>	
+						<div class="objects-box">
+						<?php include $_SERVER['DOCUMENT_ROOT'].'/is_the_shiny_day/posts.php';  ?>
+						</div>	
+					<?php } 
+					if ($_SESSION['tab']==3)
+					{	?>
+						<div class="objects-box">
+						<?php include $_SERVER['DOCUMENT_ROOT'].'/is_the_shiny_day/category.php';  ?>
+						</div>
+				<?php	}
+				?>					
+			
+		
+	<!-- </div> -->
+<!-- </body>
+</html> -->
 <?php 
 }
 else

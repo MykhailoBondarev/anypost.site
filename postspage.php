@@ -1,7 +1,7 @@
 	<?php if ($_SESSION['LogedIn']) { ?>
 	<p><a href="?addpost">Додайте власний пост</a></p>
 	<?php } ?>
-	<p>Всього записів в БД: <?php echo $title_id; ?></p>
+	<p>Всього записів в БД: <?php echo $postQuantity; ?></p>
 	<p>Ось весь список постів:</p>
 	<table>
 		<tr>
@@ -15,7 +15,7 @@
 <?php  } ?>
 		</tr>	
 	<div><?php 
-		foreach ($posts_data as $post) 
+		foreach (GetAllPosts() as $post) 
 		{	
 			if ($post['author']==0)
 			{
@@ -28,8 +28,8 @@
  			echo '<td><pre>'.htmlout($post['text']).'</pre></td>';
  			if ($_SESSION['LogedIn'])
  			{
- 			echo '<td><form action="?editpost" method="post"><input name="editpost" hidden value="'.$post['ID'].'"><button>Редагувати пост</button></form></td>';
- 			echo '<td><form action="?delpost" method="post"><input name="delpost" hidden value="'.$post['ID'].'"><button>Видалити пост</button></form></td>';
+ 			echo '<td><form action="?editpost" method="post"><input name="editpost" hidden value="'.$post['id'].'"><button>Редагувати пост</button></form></td>';
+ 			echo '<td><form action="?delpost" method="post"><input name="delpost" hidden value="'.$post['id'].'"><button>Видалити пост</button></form></td>';
  			}
  			echo '</tr>'; 			
 		}		

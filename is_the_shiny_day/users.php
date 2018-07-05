@@ -5,11 +5,11 @@ if ($_SESSION['LogedIn'])
 	$errorClass;
 	$userFields;
 	$WindowStatus;	
-	$BtnType='Зберегти';
+	$BtnType='Зберегти';		
 	if (isset($_POST['edit']) || $formClass=='modal-edit') 
-	{
-		$SelectedUser = UserSelect($_POST['user-id']);					
-		$_SESSION['modalHeader']='Редагувати користувача '.htmlout($SelectedUser['name']);
+	{		
+		$_SESSION['SelectedUser'] = UserSelect($_POST['user-id']);					
+		$_SESSION['modalHeader']='Редагувати користувача '.htmlout($_SESSION['SelectedUser']['name']);
 		$formClass='modal-edit';		
 	}
 	elseif (isset($_POST['add']) || $formClass=='modal-add')	
@@ -17,6 +17,7 @@ if ($_SESSION['LogedIn'])
 		$_SESSION['modalHeader']='Додати користувача';	
 		$formClass='modal-add';
 		$passwordFields='password';
+		unsetSessionVars('userEdit');
 	}
 
 	if ($_POST['change-pass']==1 || $formClass=='modal-pass') 
@@ -41,7 +42,7 @@ if ($_SESSION['LogedIn'])
 	{
 		if ($_POST['window-type']=='modal-pass'&&$_POST['cancel']!=1)
 		{	
-			ChangePassword($_POST['save'], $_POST['pass-field'], $_POST['confirm-pass-field']);	
+			ChangePassword($_POST['user-id'], $_POST['pass-field'], $_POST['confirm-pass-field']);	
 			ModalError($_POST['window-type'],'');
 		}
 		if ($_POST['window-type']=='modal-add')
@@ -49,16 +50,24 @@ if ($_SESSION['LogedIn'])
 			if ($_POST['username']!=''&&$_POST['email']!=''&&$_POST['login']!=''&&$_POST['role']!=''&&$_POST['role']!='0'
 				&&$_POST['pass-field']!=''&&$_POST['confirm-pass-field']!=''&&$_POST['cancel']!=1)
 			{
+
 				if ($_POST['pass-field']==$_POST['confirm-pass-field'])
 				{
 					if (filter_var($_POST['email'], FILTER_VALIDATE_EMAIL))
-					{
-						AddUser($_POST['username'], $_POST['email'], $_POST['login'], $_POST['role'], $_POST['password']);								
+					{						
+						AddUser($_POST['username'], $_POST['email'], $_POST['login'], $_POST['role'], $_POST['password']);	
+						if (isset($_FILES['avatar-img']) and $_FILES['avatar-img']['name']!='' and $_FILES['avatar-img']['error']==0)
+						{
+							UploadImg($_POST['user-id'], $_FILES['avatar-img'], $_POST['window-type'], $_POST['img-max-size']);
+						} 
+						else
+						{
+							$upImgOk=true;
+						}							
 					}
 					else
 					{
-						$errorClass = 'error';
-						$error = 'Не вірний формат електронної пошти!';
+						ModalError($_POST['window-type'],'unknown-email-format');
 					}			
 					ModalError($_POST['window-type'],'');					
 				}
@@ -76,14 +85,22 @@ if ($_SESSION['LogedIn'])
 		{
 			if ($_POST['username']!=''&&$_POST['email']!=''&&$_POST['login']!=''&&$_POST['role']!=''&&$_POST['role']!='0'&&$_POST['cancel']!=1)
 			{
+				if (isset($_FILES['avatar-img']) and $_FILES['avatar-img']['name']!='' and $_FILES['avatar-img']['error']==0)
+				{
+					UploadImg($_POST['user-id'], $_FILES['avatar-img'], $_POST['window-type'], $_POST['img-max-size']);
+				}
+				else
+				{
+					$upImgOk=true;
+				}				
+
 				if (filter_var($_POST['email'], FILTER_VALIDATE_EMAIL))
 				{	
-					UpdateUser($_POST['save'], $_POST['username'], $_POST['email'], $_POST['login'], $_POST['role']);
+					UpdateUser($_POST['user-id'], $_POST['username'], $_POST['email'], $_POST['login'], $_POST['role']);								
 				}
 				else 
 				{
-					$errorClass = 'error';
-					$error = 'Не вірний формат електронної пошти!';
+					ModalError($_POST['window-type'],'unknown-email-format');					
 				}
 
 				ModalError($_POST['window-type'],'');
@@ -95,44 +112,15 @@ if ($_SESSION['LogedIn'])
 		}
 		if ($_POST['window-type']=='modal-delete'&&$_POST['cancel']!=1)
 		{
-			DeleteUser($_POST['save']);
+			DeleteUser($_POST['user-id']);
 			ModalError($_POST['window-type'],'');
 		}
-		if (!is_null($_FILES['avatar-img'])&&$_POST['cancel']!=1)
-		{
-			var_dump($avatarArr);
-			var_dump($_FILES['avatar-img']['error']);	
-			$avatarArr = $_FILES['avatar-img'];
-			// if ($avatarArr['size']<=$_POST['MAX_FILE_SIZE'])
-			// {
-			// 	if (preg_match('/^image\/p?.jpeg$/i', $_FILES['upload']['type']) or
- 		// 			preg_match('/^image\/.gif$/i', $_FILES['upload']['type']) or
- 		// 			preg_match('/^image\/(x-)?.png$/i', $_FILES['upload']['type']) or
- 		// 			preg_match('/^image\/p?.jpg$/i', $_FILES['upload']['type']))
- 		// 			{
- 		// 				// відправка в бд
- 		// 			}
- 		// 			else
- 		// 			{
- 		// 				$errorClass = 'error';
-			// 			$error = 'Недопустиме розширення файлу. Підтримуються лише: JPEG, JPG, PNG, GIF';
-			// 			// exit;						
- 		// 			}
-			// }
-			// else
-			// {
-			// 	$errorClass = 'error';
-			// 	$error = 'Картинка перевищує допустимий розмір: '. $_POST['MAX_FILE_SIZE'];
-			// 	// exit;
-			// }
-		}
 	}	
-
-	if ($_POST['cancel']==1 or $ok)
+	if (($ok&&$upImgOk) or ($_POST['cancel']==1) or $delOk or $pasOk)
 	{
-			$error='';
-			$errorClass='';
-			$formClass='';				
+		$error='';
+		$errorClass='';
+		$formClass='';		
 	}
 
 	if ($formClass=='modal-edit'|| $formClass=='modal-add')
@@ -140,45 +128,40 @@ if ($_SESSION['LogedIn'])
 		$RolesList = ObjectList('roles');
 	}		
 	?>	
-	<pre>
-		<?php var_dump($_FILES['avatar-img']); 
-		echo $error;
-		?>
-	</pre>
 		<form action="" method="POST"> 
 			<input type="hidden" name="add">
 			<button class="add-id" submit name="user-id"  value="<?php echo htmlout($user['id']); ?>">Додати користувача</button>
 		</form>
 		<div class="modal-window <?php echo ' '.$formClass; ?>" reload="<?php echo $ok; ?>">			
-		<form enctype="multipart/form-data" class="add-edit-form" method="POST" action="">
-				<?php var_dump($_FILES['avatar-img']['tmp_name']); ?>
+		<form enctype="multipart/form-data" class="add-edit-form" method="POST" action="">							
 				<p class="<?php echo $errorClass; ?>"><?php echo $error; ?></p> 
 				<h4><?php echo $_SESSION['modalHeader']; ?></h4>
-				<input type="hidden" name="save" value="<?php echo htmlout($_POST['user-id']); ?>">
+				<input type="hidden" name="save" value="1">
+				<input type="hidden" name="user-id" value="<?php echo htmlout($_POST['user-id']); ?>">
 				<input type="hidden" name="window-type" value="<?php echo $formClass; ?>">
-				<div class="<?php echo $userFields; ?>">
-					<img src="<?php echo htmlout($SelectedUser['avatar']); ?>" alt="">
-					<input type="hidden" name="MAX_FILE_SIZE" value="400k">					
-					<input type="file" name="avatar-img" value="<?php //echo htmlout($SelectedUser['avatar']); ?>">
+				<div class="<?php echo $userFields; ?>">				
+					<img src="data:image/jpeg;base64,<?php echo base64_encode($_SESSION['SelectedUser']['avatar']); ?>" alt=""> 
+					<input type="hidden" name="img-max-size" value="400000">					
+					<input type="file" name="avatar-img">
 				</div>
 				<div class="<?php echo $userFields; ?>">
 				<label for="username">Ім'я:</label>
-				<input type="text" class="" name="username" value="<?php echo htmlout($SelectedUser['name']); ?>">				
+				<input type="text" class="" name="username" value="<?php echo htmlout($_SESSION['SelectedUser']['name']); ?>">				
 				</div>
 				<div class="<?php echo $userFields; ?>">
 				<label for="email">Поштова адреса:</label>
-				<input type="text" class="" name="email" value="<?php echo htmlout($SelectedUser['email']); ?>">				
+				<input type="text" class="" name="email" value="<?php echo htmlout($_SESSION['SelectedUser']['email']); ?>">				
 				</div>
 				<div class="<?php echo $userFields; ?>">
 				<label for="login">Логін:</label>
-				<input type="text" class="" name="login" value="<?php echo htmlout($SelectedUser['login']); ?>">				
+				<input type="text" class="" name="login" value="<?php echo htmlout($_SESSION['SelectedUser']['login']); ?>">				
 				</div>
 				<div class="<?php echo $userFields; ?>">
 				<label for="role">Роль:</label>
 				<select class="" name="role">
 					<option value="0">Не обрана</option>	
 					<?php foreach ($RolesList as $Role) { 
-						if (htmlout($SelectedUser['role']) == htmlout($Role['id'])) {
+						if (htmlout($_SESSION['SelectedUser']['role']) == htmlout($Role['id'])) {
 							$selectedRole='selected';
 						} else {
 							$selectedRole='';
@@ -205,51 +188,60 @@ if ($_SESSION['LogedIn'])
 		</div>
 	<?php  	
 	$countId=0;
-    foreach (UsersList() as $user)
-    {   ?>
-		<div class="box">
-			<div class="avatar-box">
-				<img src="" alt="avatar" class="avatar">
-			</div>
-			<div class="text-box">
-				<p class="text-prop">
-					<span>Ім'я:</span>
-					<span><?php echo htmlout($user['name']); ?></span>					
-				</p>
-				<p class="text-prop">
-					<span>Поштова адреса:</span>
-					<span><?php echo htmlout($user['email']); ?></span>					
-				</p>
-				<p class="text-prop">				
-					<span>Логін:</span>
-					<span><?php echo htmlout($user['login']); ?></span>
-				</p>
-				<p class="text-prop">				
-					<span>Роль:</span>
-					<span><?php echo htmlout($user['description']); ?></span>	
-				</p>			
-			</div>
-			<div class="button-box">
-				<form method="POST" action="">
-					<input type="hidden" name="edit"></input>
-					<button type="submit" name="user-id"  value="<?php echo htmlout($user['id']); ?>">Редагувати</button>
-				</form>
-				<form method="POST" action="">
-					<input type="hidden" name="delete" value="<?php echo htmlout($user['id']); ?>"></input>
-					<button type="submit" name="user-id"  value="<?php echo htmlout($user['id']); ?>">Видалити</button>
-				</form>		
+	$UsersArray=UsersList();
+	if ($UsersArray!='')
+	{
+	    foreach ($UsersArray as $user)
+	    {   ?>
+			<div class="box">
+				<div class="avatar-box">			
+					<img src="data:image/jpeg;base64,<?php echo base64_encode($user['avatar']); ?>" alt="avatar" class="avatar">
+				</div>
+				<div class="text-box">
+					<p class="text-prop">
+						<span>Ім'я:</span>
+						<span><?php echo htmlout($user['name']); ?></span>					
+					</p>
+					<p class="text-prop">
+						<span>Поштова адреса:</span>
+						<span><?php echo htmlout($user['email']); ?></span>					
+					</p>
+					<p class="text-prop">				
+						<span>Логін:</span>
+						<span><?php echo htmlout($user['login']); ?></span>
+					</p>
+					<p class="text-prop">				
+						<span>Роль:</span>
+						<span><?php echo htmlout($user['description']); ?></span>	
+					</p>			
+				</div>
+				<div class="button-box">
+					<form method="POST" action="">
+						<input type="hidden" name="edit"></input>
+						<button type="submit" name="user-id"  value="<?php echo htmlout($user['id']); ?>">Редагувати</button>
+					</form>
+					<form method="POST" action="">
+						<input type="hidden" name="delete"></input>
+						<button type="submit" name="user-id"  value="<?php echo htmlout($user['id']); ?>">Видалити</button>
+					</form>		
 
-			<form class="" method="POST" action="">	
-				<input type="hidden" name="user-id" value="<?php echo htmlout($user['id']); ?>">
-				<button name="change-pass" value="1" >Зміна паролю</button>
-			</form>	
+				<form class="" method="POST" action="">	
+					<input type="hidden" name="user-id" value="<?php echo htmlout($user['id']); ?>">
+					<button name="change-pass" value="1" >Зміна паролю</button>
+				</form>	
+				</div>
 			</div>
-		</div>
-
-   <?php
-    }    
+	   <?php   
+	    }  
+	}
+	else
+	{
+		echo '<h4>Поки що немає жодного користувача</h4>';		
+	}  
 }
 else
 {
 	include $_SERVER['DOCUMENT_ROOT'].'/is_the_shiny_day/denied.php';	
-}?>
+}
+
+?>

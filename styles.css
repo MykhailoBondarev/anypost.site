@@ -18,7 +18,8 @@
 
 .main-block
 {
-	margin: 10px 0;
+	margin-top: 10px;
+	margin-bottom: -4px;
 }
 
 .main-block input[type="radio"],
@@ -45,13 +46,37 @@
 {
 	border-bottom: 3px solid #fff;
 }
-
+/*
 .main-block > input:nth-of-type(1):checked ~ div:nth-of-type(1),
 .main-block > input:nth-of-type(2):checked ~ div:nth-of-type(2),
 .main-block > input:nth-of-type(3):checked ~ div:nth-of-type(3)
 {
  display: block;
  border: 1px solid #000;
+} */
+
+.objects-box
+{
+  padding-top: 20px;
+}
+
+.objects-box,
+.main-block button[type="radio"] 
+{
+  border: 1px dashed #000;
+  background-color: #fff;
+
+}
+
+.main-block button[type="radio"] 
+{
+	border-bottom: none;
+}
+
+.main-block button[type="radio"]:hover,
+.main-block button.active-tab
+{
+	padding-top: 30px;
 }
 
 .objects-box, .row, .text-box
@@ -70,7 +95,28 @@
 {
 	float: left;
 	/*max-width: 50%;*/
-	width: 50%;
+	width: 45%;
+	padding: 10px;
+}
+
+.have-sub-cat
+{
+	position: relative;
+}
+
+.have-sub-cat::before
+{
+	content: '+';
+	position: absolute;
+	cursor: pointer;
+	top: 30%;
+	right: 20%;
+	display: block;
+}
+
+.subcategory
+{
+	display: none;
 }
 
 .avatar-box,
@@ -84,6 +130,39 @@
 {
 	width: 20%;
 	min-height: 200px;
+}
+
+.avatar-box img
+{
+	max-width: 180px;
+	width: 90%;
+}
+
+.avatar-box img:hover
+{
+	
+}
+form > div
+{
+	margin: 12px 0;
+}
+
+form > div,
+form > div > input,
+form > div > button
+{
+	text-align: center;
+}
+
+form > div > input,
+form > div > textarea
+{
+	width: 70%;
+}
+
+form > div > textarea
+{
+	height: 500px;	
 }
 
 .text-box
@@ -102,6 +181,21 @@
 	background-color: rgb(239,15,15,0.75);
 	color: #ffff;
 	width: 100%;
+	animation: errormove forwards ease;
+	animation-duration: 1s;
+	position: relative;
+}
+
+@keyframes errormove
+{
+	from
+	{
+		top: -7000px;
+	}
+	to
+	{
+		top: 0;
+	}
 }
 
 .modal-window
@@ -146,6 +240,7 @@
 	padding: 1%;
 	margin: 10% auto;
 	width: 20%;
+	text-align: center;
 }
 
 .add-edit-form h4,
@@ -162,13 +257,13 @@
 {
 	width: 60%;
 	display: block;
-	margin: 0 auto;
+	margin: 8px auto;
 }
 
 .add-edit-form div img 
 {
-	width: 100px;
-	height: 120px;
+	width: 220px;
+	/*height: 120px;*/
 }
 
 .add-edit-form button
@@ -239,8 +334,70 @@ button
 {
 	padding: 7px 21px;
 	margin: 2px;
+	cursor: pointer;
 }
 
+.post-title
+{
+	text-align: center;
+	text-transform: uppercase;
+}
+
+.post-author a
+{
+	padding: 3px;
+	position: relative;
+	text-transform: capitalize;
+	animation: author-out 3s forwards;
+}
+
+@keyframes author-out
+{
+	0%
+	{
+		right: -100px;
+	}
+
+	100%
+	{
+		right: 5px;
+		background: #000;
+		color: #fff;
+		text-decoration: underline;
+	}
+}
+
+.post-title span
+{
+	text-transform: capitalize;
+	padding: 5px;
+	animation: categorytitle forwards 3s;		
+	position: relative;
+}
+
+@keyframes categorytitle
+{
+	from
+	{
+		top: 0;
+	}
+	to
+	{
+		top: 20px;
+		margin-left: 10px;
+		background: #000;
+		color: #fff;
+	}	
+}
+
+.info-block 
+{	
+	text-align: right;
+}
+.posts-box
+{
+	padding: 20px;
+}
 
 @media screen and (max-width: 710px)
 {
